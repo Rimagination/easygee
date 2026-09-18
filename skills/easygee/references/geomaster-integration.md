@@ -6,8 +6,9 @@ machine learning, STAC/COG, scientific domains, point clouds, network analysis,
 or desktop/cloud-native GIS workflows.
 
 Core principle: EasyGEE remains the GEE agent workbench. GeoMaster becomes the
-method backend. In the EasyGEE plugin, GeoMaster is bundled as
-`../geomaster`, so the plugin can work as a self-contained geospatial package
+method backend. In the EasyGEE plugin, GeoMaster is bundled as a snapshot at
+`extras/geomaster/` (plugin root; `../../extras/geomaster/` from
+`skills/easygee/`), so the plugin can work as a self-contained geospatial package
 without requiring the user's global skill registry. Do not load every
 GeoMaster example at once; route to the
 smallest useful GeoMaster reference and keep EasyGEE responsible for
@@ -28,8 +29,9 @@ and local data-method backend.
    data/method choices, local files, CRS, ML, STAC/COG, domain science, or
    uncertainty about GEE vs local GIS.
 3. Load only the referenced GeoMaster sections required by the route. Prefer
-   the bundled plugin skill at `skills/geomaster` when available; otherwise use
-   the user's global `geomaster` skill.
+   the bundled snapshot at `extras/geomaster/` when available; otherwise use
+   the user's global `geomaster` skill. A route entry `geomaster:<file>.md`
+   means `extras/geomaster/references/<file>.md`.
 4. When the route identifies a remote-sensing AI task, read
    `geoai-encyclopedia.md` and only the smallest matching chapter under
    `geoai-with-python/`.
@@ -100,3 +102,42 @@ When method routing materially affects the work, state:
   AOI, or dataset candidates.
 - Unrun pieces caused by credentials, missing local dependencies, quota, or
   unavailable data.
+
+## Entry Routing Rules
+
+- Route the geospatial method backend when the request has data/method
+   choices, local files, CRS, ML, STAC/COG, domain science, or uncertainty
+   about GEE vs local GIS:
+   - Run `python scripts/route_geospatial_method.py "<task>" --json`.
+   - **gee_first**: use Earth Engine/geemap for cloud-scale catalog data,
+     reducers, visualization, and exports.
+   - **local_first**: use GeoMaster local GIS knowledge for local files,
+     CRS-heavy work, topology, point clouds, networks, or windowed rasters.
+   - **hybrid**: use GEE for data access/preprocessing and local tools for COG,
+     STAC, ML, advanced statistics, or exact file-based GIS.
+   - **catalog_first**: search/verify datasets before analysis.
+   - **browser_first**: draw AOI or inspect map state before computation.
+   - For remote-sensing AI tasks, also read
+     `references/geoai-encyclopedia.md` and route to the smallest bundled
+     chapter under `references/geoai-with-python/`. Keep EasyGEE responsible
+     for GEE/export orchestration and GeoMaster responsible for general GIS
+     correctness.
+- If the task needs remote-sensing domain methods beyond GEE/geemap plumbing
+   (cloud masks, indices, classification, CRS, raster/vector operations), load
+   the bundled GeoMaster snapshot at `extras/geomaster/SKILL.md` (plugin root;
+   `../../extras/geomaster/SKILL.md` from `skills/easygee/`) as a companion
+   reference.
+- Use GeoMaster as EasyGEE's method backend, not as a replacement for EasyGEE.
+  For local files, CRS-heavy work, COG/STAC, ML, point clouds, networks, or
+  scientific-domain methods, run `route_geospatial_method.py` and load only the
+  GeoMaster references named in its `read` list.
+- For hybrid workflows, make the GEE-to-local handoff explicit: AOI, bands,
+  scale, projection, masks, nodata, export status, local file path, and which
+  backend owns each step.
+
+## Scripts
+
+- Use `scripts/route_geospatial_method.py "<task>" --json` before geospatial
+  tasks that may be better served by GEE, local GIS, hybrid workflows, catalog
+  search, or browser-first AOI/map inspection. Treat its `read` list as the
+  minimal reference set to load from EasyGEE and GeoMaster.

@@ -150,3 +150,17 @@ the chapters/references consulted, the data contract, the model/inference
 choice, evaluation design, artifact handoff, and any unrun or unverifiable
 steps. This makes a GeoAI answer operational rather than a collection of
 library names.
+
+## Entry Routing Rules
+
+- If the user asks to execute a remote-sensing AI method, read
+   `references/geoai-encyclopedia.md` first, then load only the relevant
+   `references/geoai-with-python/chapters/` file(s). Use its data contract,
+   training/inference loop, spatial evaluation, and georeferenced-output rules
+   as the method layer; do not treat a model name or score as a completed
+   analysis.
+- Use the GeoAI Encyclopedia as the task-method backend for remote-sensing AI.
+  Read `references/geoai-encyclopedia.md`, choose the smallest relevant
+  chapter, and preserve its data, spatial-split, evaluation, and
+  georeferenced-output contracts. Do not bulk-load the bundled chapters or
+  claim training/inference ran without a checked artifact.

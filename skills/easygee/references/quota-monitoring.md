@@ -22,7 +22,7 @@ If the task is only to prepare Google Cloud CLI, use the fixed resource helper:
 python scripts/ensure_gcloud_cli.py --project PROJECT_ID --run
 ```
 
-On Windows, EasyGEE treats `D:\Dev\tools\google-cloud-sdk` as the reusable
+On Windows, EasyGEE treats `%LOCALAPPDATA%\EasyGEE\tools\google-cloud-sdk` as the reusable
 Google Cloud CLI resource and prefers the bundled-Python archive so direct
 `gcloud.cmd` calls work without relying on PATH. `EASYGEE_GCLOUD` can point to
 an exact `gcloud` binary, and `EASYGEE_GCLOUD_ROOT` can point to another fixed
@@ -171,3 +171,38 @@ monthly EECU system limit when available and labels the UI value as inferred.
   limit, not unlimited compute in every technical sense.
 - Do not suggest bypassing quotas with multiple accounts. Earth Engine
   explicitly treats quota circumvention as a Terms of Service violation.
+
+## Scripts
+
+- Use `scripts/show_ee_quotas.py --project <project>` or pass a Cloud Console
+  quota URL when the user asks for quota values. Use `--include-usage` only
+  when the user asks for recent/current usage. Report whether results are live
+  Cloud Quotas/Monitoring data or official fallback defaults.
+- Use `scripts/refresh_map_console_quota.py <map.html>` after UI-only edits to
+  an existing Map Console HTML file when quota state needs to be refreshed.
+  This updates only `STATE.quota` and refuses to write default-only fallback
+  quota state unless `--allow-fallback` is explicitly provided.
+- Use `scripts/probe_bigquery_slot_usage.py --project <project>` when the
+  BigQuery raster function slot-time quota shows a live limit but no usage
+  time series. Explain that no Monitoring series usually means zero recent
+  usage for that quota, not missing authorization, if other Earth Engine usage
+  metrics are present. The probe prints a tiny `ST_REGIONSTATS` BigQuery SQL
+  sample by default; run it only with `--run --ack-cost` after the user
+  explicitly accepts that it creates a BigQuery job and can consume quota/cost.
+
+## Operating Rules
+
+- For quota display, parse the project id from the Console URL when present,
+  run `show_ee_quotas.py`, and never print `gcloud auth print-access-token`
+  output, OAuth URLs, service account keys, or credential file contents.
+- For normal Map Console pages, leave live quota lookup enabled so the UI can
+  show Cloud Quotas / Monitoring status. Use `--no-live-quota` only for offline
+  tests, smoke runs, or explicitly requested no-network previews; for non-sample
+  pages the generator requires the explicit `--allow-default-quota-state` guard
+  before it will write default-only quota state.
+- For UI-only Map Console maintenance, do not regenerate a user-facing page
+  with `--no-live-quota` or `--no-quota-usage`. Patch the source/generated HTML
+  for the UI change, then run `refresh_map_console_quota.py` if the page's
+  embedded quota state needs refreshing. If live quota lookup is unavailable,
+  leave the existing page state unchanged and explain the quota lookup failure
+  instead of downgrading the UI to default-only quota status.

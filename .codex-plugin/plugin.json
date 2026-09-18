@@ -38,9 +38,9 @@
       "打开 EasyGEE 地图工作台（Map Console）"
     ],
     "brandColor": "#0F766E",
-    "composerIcon": "./assets/icon.png",
+    "composerIcon": "./assets/logo.png",
     "logo": "./assets/logo.png",
-    "logoDark": "./assets/logo-dark.png",
+    "logoDark": "./assets/logo.png",
     "screenshots": []
   }
 }

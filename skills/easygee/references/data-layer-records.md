@@ -98,3 +98,11 @@ Ask one focused question when missing semantics changes the result:
 - output is ambiguous between raster, table, vector, or map artifact.
 
 If a routine default is safe, proceed but mark it as assumed in the record.
+
+## Operating Rules
+
+- Treat data-layer semantics as part of the deliverable, not hidden background
+  reasoning. For datasets and exports, record target variable, official or
+  community source, dataset id, time range, AOI source, bands/fields, units,
+  scale/offset, QA/mask, transformations, output target, and verification
+  status.

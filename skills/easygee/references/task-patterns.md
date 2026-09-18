@@ -228,3 +228,26 @@ A good geemap task notebook has:
 - export cells that are not accidentally started,
 - a short limitations/provenance cell,
 - `review_ee_code.py` output reviewed before handoff.
+
+## Scripts
+
+- Use `scripts/resolve_ambiguous_geo_request.py "<task>" --json` before acting
+  on vague extraction requests such as "extract water in this AOI", "提取这个影像里的屋顶",
+  or "识别当前图层里的目标". It ranks existing GEE products, reproducible
+  remote-sensing workflows, and current-image visual recognition, and returns
+  multiple-choice clarification prompts when the wording changes the method.
+  When a Map Console is open, prefer `scripts/map_console_agent.py plan --url
+  <localhost-url> "<task>" --pretty` so AOI and visible-layer state are included
+  without rereading generated HTML.
+- Use `scripts/plan_gee_task.py "<task prompt>"` to route ambiguous analysis
+  requests to likely datasets, references, first checks, and failure modes.
+
+## Operating Rules
+
+- For vague geospatial extraction, do not guess a dataset from the noun alone.
+  First resolve whether the user means a product-backed AOI analysis,
+  remote-sensing derivation, or current-image visual recognition. If the
+  planner returns `ask_user`, ask one multiple-choice question and continue
+  only after the answer fixes the route. Once the route is clear, run the work
+  in the background and sync outputs as ordinary Map Console layers, vectors,
+  summaries, or exports without adding task-specific toolbar buttons.

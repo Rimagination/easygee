@@ -15,5 +15,13 @@
     "remote-sensing",
     "mcp"
   ],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "mcpServers": {
+    "easygee": {
+      "command": "python",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/easygee_mcp_server.py"
+      ]
+    }
+  }
 }

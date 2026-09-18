@@ -19,8 +19,8 @@ DEFAULT_GLOBS = (
     "references/*.md",
     "references/*.json",
     "references/geoai-with-python/**/*.md",
-    "../gee-growth-diary/SKILL.md",
-    "../gee-growth-diary/references/*.md",
+    "../../extras/gee-growth-diary/SKILL.md",
+    "../../extras/gee-growth-diary/references/*.md",
 )
 
 CORE_METHOD_REFERENCES = {
@@ -116,7 +116,7 @@ def score_chunk(path: str, title: str, chunk: str, terms: list[str], query: str)
         score += 12.0
     if path_l in CORE_METHOD_REFERENCES:
         score += 10.0
-    if path_l.startswith("../gee-growth-diary/"):
+    if path_l.startswith("../../extras/gee-growth-diary/"):
         score *= 0.20
     return score
 

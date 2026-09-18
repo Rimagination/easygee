@@ -171,3 +171,77 @@ do not treat it as the durable source of workbench state.
   Python workflow before exporting the geemap HTML.
 - Prefer `127.0.0.1` binding for local previews unless the user explicitly asks
   to expose the page on the network.
+
+## Scripts
+
+- Use `scripts/serve_map_preview.py <map.html>` to serve geemap-exported HTML
+  or local map artifacts on `127.0.0.1` without extra software. If the
+  `browser:control-in-app-browser` skill is available, load it and open the
+  printed localhost URL there.
+- Use `scripts/create_map_console.py --project <project> --output <index.html>`
+  when the user wants a fixed browser UI rather than a one-off map page. This
+  creates the viewer-first EasyGEE 地图工作台 (Map Console): the map fills the browser by
+  default, while layer/catalog, inspector, measure, basemap, task/log, and
+  project/quota controls stay compressed behind a small Calcite-inspired icon
+  tool rail and floating drawers. Its Add Layers catalog defaults to official
+  Earth Engine STAC entries plus GEE Community Catalog CSV entries, with source
+  labels so community datasets are not mistaken for official catalog assets.
+  Serve the generated HTML with `serve_map_preview.py`.
+- Use `scripts/map_console_agent.py` for agent-facing Map Console work. Prefer
+  its `capabilities`, `state --compact`, `aoi`, `measurement-summary`,
+  `quick-layer`, `render-recipe`, and `extract-ndvi` commands over reading
+  generated HTML or browser DOM. The script talks to the local preview server's
+  compact `/api/session/*` protocol and can enqueue browser-visible layer
+  actions.
+
+## Map Console Operating Rules
+
+- In the EasyGEE Chinese context, “打开地图”, “地图工作台”, “地图控制台”, and
+  “Map Console” all refer to the same persistent EasyGEE 地图工作台. Route these
+  requests to the existing Map Console and reuse its browser session when possible.
+- For persistent exploratory sessions, prefer the EasyGEE Map Console generated
+  by `create_map_console.py` over ad hoc Leaflet/geemap HTML. Treat it as a
+  local diagnostic workbench inspired by GEE Code Editor and GeoLibre patterns,
+  not as proof that the underlying analysis is statistically correct.
+- Keep the Map Console tool rail stable. Do not add task-specific toolbar
+  buttons for analyses such as NDVI; run those actions in the background and
+  sync the result back as normal layers in the existing layer stack.
+- Treat AOI as a system layer inside the Map Console layer stack. Users can
+  hide it, change its color/opacity, or clear it through the layer workflow.
+  Do not leave drawn AOI state as an unmanageable overlay.
+- Treat explicit AOI and processing extent as separate state. After AOI is
+  cleared, `aoi` should be null but `processingAoi` / `processingBounds` should
+  fall back to the current map viewport so remote-sensing preview layers can
+  still be loaded.
+- Treat Earth Engine visualization parameters as editable layer state. When a
+  user asks to change JRC water to blue, adjust an NDVI palette, remove a
+  loaded layer, or restore a default color ramp, enqueue a Map Console action
+  such as `updateLayerStyle`, `setAoiStyle`, or `removeLayer` through
+  `scripts/map_console_agent.py`; do not regenerate a one-off HTML page.
+- Treat ImageCollection layers as reproducible recipes, not just rendered
+  tiles. The Map Console state exposes `selectedDataset` and layer `recipe`
+  metadata; use explicit recipes for requests like "MODIS May-Sep NDVImax"
+  with dataset id, band/index, temporal reducer, date/month window, scale
+  factor, AOI, and visualization parameters instead of relying on the Add
+  Layers quick-preview default.
+- Treat AOI and measurement data as first-class console state. The console
+  exposes `window.EasyGEE.getAoi()`, `setAoi()`, `getMeasurements()`,
+  `getMeasurementSummary()`, and `extractNdvi()` for follow-up automation.
+  Default AOI drawing is rectangular; polygon AOI is supported through the same
+  AOI tool state/API without expanding the fixed toolbar.
+- Treat the Map Console profile as the durable source for dataset favorites,
+  AOI, and measurements. The preview server persists profile JSON in local app
+  data by default, with `serve_map_preview.py --profile <path>` available for
+  tests or explicit workspaces. Browser `localStorage` is only a cache and may
+  be isolated by localhost port.
+- For token-efficient follow-up work, read `references/map-console-agent-contract.json`
+  or run `map_console_agent.py capabilities` once, then use
+  `map_console_agent.py state --compact` for routine map context. Do not reread
+  the generated Map Console HTML/CSS or `create_map_console.py` merely to
+  discover stable UI capabilities. For existing layer state changes, enqueue
+  `show-layer`, `hide-layer`, `select-layer`, or `set-opacity` instead of
+  interacting with the browser DOM.
+- For common NDVI display requests, try `map_console_agent.py quick-layer`
+  before dataset search or custom recipes. It covers deterministic fast paths
+  such as Sentinel-2 10 m NDVI and MODIS NDVI max/median seasonal composites,
+  using the current AOI or viewport from Map Console state.

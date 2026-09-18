@@ -37,18 +37,21 @@ EasyGEE packages Google Earth Engine, geemap, GeoMaster method knowledge, and a 
 ```text
 easygee/
 ├── .codex-plugin/       # Codex plugin metadata
-├── .claude-plugin/      # Claude plugin metadata
-├── assets/              # EasyGEE icon and logo
-├── commands/            # Claude-style command entrypoints
-├── hooks/               # Hook config and lightweight scripts
-├── scripts/             # EasyGEE MCP server entrypoint
+├── .claude-plugin/      # Claude Code plugin and marketplace metadata
+├── .mcp.json            # MCP server declaration (Codex and other MCP clients)
+├── assets/              # EasyGEE logo
+├── commands/            # Claude Code shortcut commands
+├── scripts/             # MCP server and installer (install.py)
 ├── skills/
 │   ├── easygee/         # GEE / geemap / map-console and remote-sensing workflows
-│   │   ├── references/  # QA, HLS, SAR, temporal-compositing, and GeoAI references
+│   │   ├── references/  # method references read on demand
+│   │   ├── assets/      # Map Console front-end templates
 │   │   └── scripts/     # catalog search, task routing, cases, and offline evaluation
-│   ├── geomaster/       # Local GIS and remote-sensing method knowledge
-│   └── gee-growth-diary/ # Distilled GEEer成长日记 method playbook
-└── adapters/            # Codex, Claude, Zcode, and Qoder notes
+│   └── multimodal-geo-vector/ # imagery annotations to CRS-aware vectors
+├── extras/
+│   ├── geomaster/       # Local GIS and remote-sensing knowledge (read on demand by easygee)
+│   └── gee-growth-diary/ # Distilled GEEer成长日记 playbook (read on demand by easygee)
+└── requirements*.txt    # Python dependencies
 ```
 
 </details>
@@ -63,31 +66,39 @@ One-sentence agent install:
 Install this plugin for me: [Rimagination/easygee](https://github.com/Rimagination/easygee)
 ```
 
-After seeing that sentence, an agent should clone or update the repository, write the personal marketplace entry, validate the plugin, and run `codex plugin add easygee@local-plugins` when the Codex CLI is available.
+The agent should clone the repository to `~/plugins/easygee` and run `python scripts/install.py`.
 
-On Windows, you can also run this one-liner:
+Manual install (requires Python 3.9+ and git):
+
+```bash
+git clone https://github.com/Rimagination/easygee.git ~/plugins/easygee
+python ~/plugins/easygee/scripts/install.py
+```
+
+On Windows, this one-liner clones or updates the repository and runs the same installer:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command '$p=Join-Path $HOME "plugins\easygee"; if(Test-Path $p){ git -C $p pull --ff-only } else { gh repo clone Rimagination/easygee $p }; & (Join-Path $p "scripts\install-easygee.ps1")'
+powershell -NoProfile -ExecutionPolicy Bypass -Command '$p=Join-Path $HOME "plugins\easygee"; if(Test-Path $p){ git -C $p pull --ff-only } else { git clone https://github.com/Rimagination/easygee.git $p }; & (Join-Path $p "scripts\install-easygee.ps1")'
 ```
 
-The default install location is:
+The installer does two things:
 
-```text
-%USERPROFILE%\plugins\easygee
-```
+1. Creates a Python environment in the EasyGEE user directory (with uv when available), installs `requirements.txt`, and records the interpreter in `settings.json`. All agents share this environment.
+2. Registers EasyGEE with every detected agent: Codex and Claude Code through their plugin CLIs, Qoder through links in its skills folder.
 
-The installer adds the plugin path to the local marketplace. Codex discovers EasyGEE from:
+Common options:
 
-```text
-C:\Users\Liang\.agents\plugins\marketplace.json
-```
+| Option | Effect |
+| --- | --- |
+| `--hosts codex,claude,qoder` | Agents to register; default `auto` uses what is detected |
+| `--skills-dir <dir>` | Link the skills into any agent folder that reads `SKILL.md` |
+| `--python <path>` | Use an existing Python environment instead of creating one |
+| `--with-vector` | Also install the multimodal vectorization dependencies |
+| `--print-mcp-config` | Print an MCP config snippet for other MCP clients |
+| `--uninstall` / `--purge` | Unregister; `--purge` also deletes the Python environment |
+| `--dry-run` | Show the actions without running them |
 
-The installer also validates the plugin structure. The manual validation command is:
-
-```powershell
-python C:\Users\Liang\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py C:\Users\Liang\plugins\easygee
-```
+EasyGEE user directory: `%LOCALAPPDATA%\EasyGEE` on Windows, `~/.config/easygee` elsewhere. Workspace, cache, and interpreter paths can be changed in `settings.json` or overridden with `EASYGEE_WORKSPACE`, `EASYGEE_CACHE_DIR`, and `EASYGEE_PYTHON`.
 
 ### 2. Quick Use
 

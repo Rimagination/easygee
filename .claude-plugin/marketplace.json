@@ -1,0 +1,14 @@
+{
+  "name": "easygee",
+  "owner": {
+    "name": "Liang"
+  },
+  "description": "EasyGEE plugin for Google Earth Engine and geemap agents.",
+  "plugins": [
+    {
+      "name": "easygee",
+      "source": "./",
+      "description": "Google Earth Engine and geemap workflows: dataset discovery, auth and quota checks, map console, and GeoAI methods."
+    }
+  ]
+}

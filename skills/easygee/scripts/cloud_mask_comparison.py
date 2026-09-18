@@ -25,7 +25,7 @@ try:
         mask_s2_qa60,
         mask_s2_scl,
     )
-    from easygee_project import resolve_project
+    from easygee_project import resolve_project, workspace_root
 except ImportError:  # pragma: no cover - useful when imported as a package
     from skills.easygee.scripts.cloud_mask_workflows import (
         S2_SR_ID,
@@ -35,7 +35,7 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         mask_s2_qa60,
         mask_s2_scl,
     )
-    from skills.easygee.scripts.easygee_project import resolve_project
+    from skills.easygee.scripts.easygee_project import resolve_project, workspace_root
 
 
 IMAGE_INDEX = "20200601T185919_20200601T190551_T10TER"
@@ -46,7 +46,7 @@ AOI_BUFFER_M = 5_000
 RGB_VIS = {"bands": ["B4", "B3", "B2"], "min": 0, "max": 3000}
 MASK_VIS = {"min": 0, "max": 1, "palette": ["d73027", "1a9850"]}
 CONSENSUS_PALETTE = ["f1f1f1", "fdae61", "fee08b", "91cf60", "1a9850"]
-DEFAULT_OUTPUT = Path("D:/Scratch/easygee-cloud-mask-comparison/cloud-mask-comparison.html")
+DEFAULT_OUTPUT = workspace_root() / "cloud-mask-comparison" / "cloud-mask-comparison.html"
 
 
 def _clear_band(masked_image: ee.Image) -> ee.Image:

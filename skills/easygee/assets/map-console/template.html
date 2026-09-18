@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__EASYGEE_TITLE__</title>
+  <link rel="icon" href="__EASYGEE_LOGO_DATA_URI__">
+  <style>
+__EASYGEE_LEAFLET_CSS__
+__EASYGEE_SHELL_CSS__
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar" aria-label="__EASYGEE_TITLE__ EE">
+      <h1>__EASYGEE_TITLE__</h1>
+      <button class="logo-layer collapsed" id="active-layer-badge" type="button" title="Active layer" aria-label="Active layer" aria-haspopup="true" aria-expanded="false">
+        <span class="mark" aria-hidden="true">__EASYGEE_LOGO_MARK__</span>
+        <span class="logo-layer-copy"><strong id="active-name"></strong><span id="active-dataset"></span></span>
+      </button>
+    </header>
+
+    <section class="basemap-source-card" id="basemap-source-card" aria-hidden="true" aria-labelledby="basemap-source-heading">
+      <div class="basemap-source-head">
+        <div class="basemap-source-kicker" id="basemap-source-heading" data-i18n="source.title">Basemap source</div>
+        <button class="icon-btn panel-close" id="basemap-source-close" type="button" title="Close" aria-label="Close" data-i18n-title="tool.close">__EASYGEE_ICON_CLOSE__</button>
+      </div>
+      <div class="basemap-source-hero">
+        <span class="basemap-source-visual basemap-thumb osm" id="basemap-source-visual" aria-hidden="true"></span>
+        <div>
+          <div class="basemap-source-name" id="basemap-source-name"></div>
+          <div class="basemap-source-service" id="basemap-source-service"></div>
+        </div>
+      </div>
+      <dl class="basemap-source-grid">
+        <div class="basemap-source-row"><dt data-i18n="source.provider">Provider</dt><dd id="basemap-source-provider"></dd></div>
+        <div class="basemap-source-row" id="basemap-source-date-row" hidden><dt data-i18n="source.date">Imagery date</dt><dd id="basemap-source-date"></dd></div>
+        <div class="basemap-source-row"><dt data-i18n="source.engine">Data engine</dt><dd id="basemap-source-engine"></dd></div>
+        <div class="basemap-source-row"><dt data-i18n="source.performance">Load timing</dt><dd id="basemap-source-performance"></dd></div>
+        <div class="basemap-source-row"><dt data-i18n="source.delivery">Delivery</dt><dd id="basemap-source-delivery"></dd></div>
+        <div class="basemap-source-row"><dt data-i18n="source.nativeZoom">Native zoom</dt><dd id="basemap-source-zoom"></dd></div>
+        <div class="basemap-source-row"><dt data-i18n="source.attribution">Attribution</dt><dd id="basemap-source-attribution"></dd></div>
+      </dl>
+      <a class="basemap-source-link" id="basemap-source-link" href="#" target="_blank" rel="noopener noreferrer"><span data-i18n="source.open">Open official source</span>__EASYGEE_ICON_EXTERNAL__</a>
+    </section>
+
+    <nav class="tool-rail" aria-label="Map tools">
+      <button class="icon-btn" id="data-btn" title="Add layers" aria-label="Add layers" data-i18n-title="tool.data">__EASYGEE_ICON_DATA__</button>
+      <button class="icon-btn" id="upload-btn" title="Import file" aria-label="Import file" data-i18n-title="tool.upload">__EASYGEE_ICON_UPLOAD__</button>
+      <button class="icon-btn" id="layers-btn" title="Layers" aria-label="Layers" data-i18n-title="tool.layers">__EASYGEE_ICON_LAYERS__</button>
+      <button class="icon-btn" id="inspector-btn" title="Inspector" aria-label="Inspector" data-i18n-title="tool.inspector">__EASYGEE_ICON_INSPECT__</button>
+      <button class="icon-btn" id="draw-aoi-btn" title="Draw AOI" aria-label="Draw AOI" data-i18n-title="tool.drawAoi">__EASYGEE_ICON_DRAW_AOI__</button>
+      <button class="icon-btn" id="measure-btn" title="Measure distance" aria-label="Measure distance" aria-pressed="false" data-i18n-title="tool.measure">__EASYGEE_ICON_MEASURE__</button>
+      <div class="rail-break" aria-hidden="true"></div>
+      <button class="icon-btn" id="basemap-btn" title="Basemap" aria-label="Basemap" data-i18n-title="tool.basemap">__EASYGEE_ICON_BASEMAP__</button>
+      <button class="icon-btn quota-ready" id="quota-btn" title="Quota status" aria-label="Quota status" data-i18n-title="tool.quota">__EASYGEE_ICON_QUOTA__<span class="quota-indicator"></span></button>
+      <button class="icon-btn" id="drive-btn" title="Google Drive" aria-label="Google Drive" data-i18n-title="tool.drive">__EASYGEE_ICON_DRIVE__</button>
+      <div class="rail-break" aria-hidden="true"></div>
+      <button class="icon-btn" id="home-btn" title="Zoom to AOI" aria-label="Zoom to AOI" data-i18n-title="tool.home">__EASYGEE_ICON_HOME__</button>
+      <button class="icon-btn" id="lang-btn" title="Switch language" aria-label="Switch language" data-i18n-title="tool.lang">__EASYGEE_ICON_LANGUAGE__<span class="lang-code" id="lang-code">中</span></button>
+      <button class="icon-btn wide-only" id="copy-btn" title="Copy project state" aria-label="Copy project state" data-i18n-title="action.copyTitle">C</button>
+      <button class="icon-btn wide-only" id="download-btn" title="Download project JSON" aria-label="Download project JSON" data-i18n-title="action.jsonTitle">D</button>
+    </nav>
+
+    <aside class="upload-panel" aria-label="Import file">
+      <div class="panel-head">
+        <div class="upload-title" data-i18n="upload.title">Import File</div>
+        <button class="icon-btn panel-close" id="upload-close-btn" title="Close" aria-label="Close" data-i18n-title="tool.close">__EASYGEE_ICON_CLOSE__</button>
+      </div>
+      <div class="upload-body">
+        <div class="upload-field-label" data-i18n="upload.sourceProjection">Source Projection</div>
+        <p class="upload-note" data-i18n="upload.projectionHelp">For .shp files only. ZIP and GPKG auto-detect their projection.</p>
+        <select class="upload-select" id="upload-projection" aria-label="Source Projection">
+          <option value="EPSG:4326">WGS 84 (EPSG:4326)</option>
+          <option value="EPSG:3857">Web Mercator (EPSG:3857)</option>
+          <option value="EPSG:4490">CGCS2000 (EPSG:4490)</option>
+          <option value="EPSG:32650">WGS 84 / UTM zone 50N (EPSG:32650)</option>
+        </select>
+        <div class="upload-row">
+          <label class="upload-file-button" for="upload-file-input" data-i18n="upload.chooseFile">Choose File</label>
+          <div class="upload-file-name" id="upload-file-name" data-i18n="upload.noFile">No file selected</div>
+          <button class="upload-submit" id="upload-submit-btn" type="button" disabled>__EASYGEE_ICON_UPLOAD__<span data-i18n="upload.submit">Upload</span></button>
+        </div>
+        <input id="upload-file-input" type="file" multiple accept=".shp,.shx,.dbf,.prj,.cpg,.zip,.kml,.kmz,.gpx,.geojson,.json,.csv,.gpkg" hidden>
+        <div class="upload-formats" data-i18n="upload.formats">SHP, ZIP, KML, KMZ, GPX, GeoJSON, CSV, GPKG · Max 50 MB each</div>
+        <div class="upload-status" id="upload-status" aria-live="polite"></div>
+        <div class="upload-list" id="upload-list"></div>
+      </div>
+    </aside>
+
+    <aside class="panel left data-panel">
+      <div class="panel-head">
+        <div class="panel-heading">
+          <div class="panel-title" data-i18n="panel.data">Add Layers</div>
+          <div class="panel-subtitle" data-i18n="panel.dataSubtitle">Search Earth Engine datasets</div>
+        </div>
+        <button class="icon-btn panel-close mobile-only" data-close-panel="data-panel" title="Close" aria-label="Close" data-i18n-title="tool.close">__EASYGEE_ICON_CLOSE__</button>
+      </div>
+      <div class="panel-body">
+        <div class="catalog-shell">
+          <aside class="catalog-sidebar" aria-label="Catalog filters">
+            <input class="search" id="category-search" placeholder="Filter options..." data-i18n-placeholder="placeholder.filterOptions">
+            <div class="catalog-filter-title" data-i18n="catalog.categories">Categories</div>
+            <div class="category-list" id="category-list"></div>
+          </aside>
+          <section class="catalog-main">
+            <div class="catalog-search-row">
+              <input class="search" id="dataset-search" placeholder="Search layers by name, category, or id" data-i18n-placeholder="placeholder.searchDatasets">
+              <div class="type-chip-list" id="type-chip-list"></div>
+            </div>
+            <div class="dataset-toolbar">
+              <span class="tag" id="catalog-count"></span>
+              <span class="dataset-hint" data-i18n="data.addHint">Click + to process nearby and add</span>
+            </div>
+            <div class="dataset-list" id="dataset-list"></div>
+            <aside class="dataset-detail-popover" id="dataset-detail" aria-live="polite"></aside>
+          </section>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="basemap-panel">
+      <div class="panel-head">
+        <div class="panel-heading">
+          <div class="panel-title" data-i18n="panel.basemap">Basemap</div>
+          <div class="panel-subtitle" id="basemap-current"></div>
+        </div>
+        <button class="icon-btn panel-close mobile-only" id="basemap-close-btn" title="Close" aria-label="Close" data-i18n-title="tool.close">__EASYGEE_ICON_CLOSE__</button>
+      </div>
+      <div class="basemap-body">
+        <div class="basemap-toolbar">
+          <button class="basemap-add" id="basemap-add-btn" type="button">__EASYGEE_ICON_ADD__<span data-i18n="basemap.addCustom">Add custom basemap</span></button>
+          <span class="basemap-custom-count" id="basemap-custom-count"></span>
+        </div>
+        <section class="basemap-provider-auth" id="tianditu-auth">
+          <button class="basemap-provider-auth-toggle" id="tianditu-auth-toggle" type="button" aria-expanded="false" aria-controls="tianditu-auth-body"><span class="basemap-provider-auth-title"><span class="basemap-provider-auth-mark" aria-hidden="true">TK</span><span data-i18n="basemap.tiandituKey">Tianditu access key</span></span><span class="basemap-provider-auth-state" id="tianditu-auth-state"></span></button>
+          <div class="basemap-provider-auth-body" id="tianditu-auth-body" hidden>
+            <div class="basemap-provider-auth-summary" id="tianditu-auth-summary" hidden>
+              <span class="basemap-provider-auth-summary-copy" data-i18n="basemap.tiandituKeyConfiguredHint">Ready for Tianditu basemaps.</span>
+              <span class="basemap-provider-auth-actions"><button class="basemap-form-button" id="tianditu-token-persistence" type="button" hidden></button><button class="basemap-form-button" id="tianditu-token-change" type="button" data-i18n="basemap.tiandituKeyChange">Change key</button></span>
+            </div>
+            <div class="basemap-provider-auth-editor" id="tianditu-auth-editor">
+              <div class="basemap-provider-auth-row">
+                <input class="basemap-input code" id="tianditu-token" type="password" maxlength="256" autocomplete="off" spellcheck="false" data-i18n-placeholder="basemap.tiandituKeyPlaceholder">
+                <button class="basemap-form-button primary" id="tianditu-token-apply" type="button" data-i18n="basemap.tiandituKeyApply">Apply</button>
+              </div>
+              <label class="basemap-provider-auth-remember"><input id="tianditu-token-remember" type="checkbox"><span data-i18n="basemap.tiandituKeyRememberDevice">Remember on this device (Windows encrypted)</span></label>
+              <div class="basemap-provider-auth-help"><span data-i18n="basemap.tiandituKeyHelp">Stored only for this browser tab.</span> <a href="https://cloudcenter.tianditu.gov.cn/center/development/myApp" target="_blank" rel="noopener noreferrer" data-i18n="basemap.tiandituKeyLink">Get a key</a></div>
+            </div>
+          </div>
+        </section>
+        <form class="basemap-editor" id="basemap-editor" hidden novalidate>
+          <div class="basemap-editor-head">
+            <div>
+              <div class="basemap-editor-title" id="basemap-editor-title" data-i18n="basemap.editorAdd">New basemap</div>
+              <div class="basemap-editor-kind" data-i18n="basemap.editorHint">Local profile configuration</div>
+            </div>
+            <button class="icon-btn panel-close" id="basemap-editor-close" type="button" title="Close" aria-label="Close" data-i18n-title="tool.close">__EASYGEE_ICON_CLOSE__</button>
+          </div>
+          <div class="basemap-editor-grid">
+            <label class="basemap-field wide"><span data-i18n="basemap.fieldName">Name</span><input class="basemap-input" id="basemap-form-name" maxlength="120" autocomplete="off" required></label>
+            <label class="basemap-field"><span data-i18n="basemap.fieldType">Service type</span><select class="basemap-select" id="basemap-form-type">
+              <option value="xyz">XYZ</option><option value="tms">TMS</option><option value="arcgis">ArcGIS REST</option><option value="wms">WMS</option><option value="wmts">WMTS</option><option value="pmtiles">PMTiles (raster)</option><option value="cog">COG (MapLibre WebGL)</option>
+            </select></label>
+            <label class="basemap-field"><span data-i18n="basemap.fieldProvider">Provider</span><input class="basemap-input" id="basemap-form-provider" maxlength="240" autocomplete="off"></label>
+            <label class="basemap-field wide"><span data-i18n="basemap.fieldUrl">Service URL / tile template</span><input class="basemap-input code" id="basemap-form-url" maxlength="4096" inputmode="url" autocomplete="off" required data-i18n-placeholder="basemap.urlPlaceholder"></label>
+            <label class="basemap-field basemap-type-field wide" data-basemap-types="xyz,tms"><span data-i18n="basemap.fieldSubdomains">Subdomains</span><input class="basemap-input code" id="basemap-form-subdomains" maxlength="120" autocomplete="off" placeholder="a,b,c"></label>
+            <label class="basemap-field basemap-type-field wide" data-basemap-types="wms,wmts"><span data-i18n="basemap.fieldLayers">Layer name</span><input class="basemap-input code" id="basemap-form-layers" maxlength="500" autocomplete="off"></label>
+            <label class="basemap-field basemap-type-field" data-basemap-types="wms,wmts"><span data-i18n="basemap.fieldStyles">Style</span><input class="basemap-input code" id="basemap-form-styles" maxlength="500" autocomplete="off"></label>
+            <label class="basemap-field basemap-type-field" data-basemap-types="wms"><span data-i18n="basemap.fieldVersion">WMS version</span><select class="basemap-select" id="basemap-form-version"><option value="1.3.0">1.3.0</option><option value="1.1.1">1.1.1</option></select></label>
+            <label class="basemap-field basemap-type-field" data-basemap-types="wmts"><span data-i18n="basemap.fieldMatrixSet">Tile matrix set</span><input class="basemap-input code" id="basemap-form-matrix-set" maxlength="160" autocomplete="off" value="GoogleMapsCompatible"></label>
+            <label class="basemap-field basemap-type-field" data-basemap-types="wmts"><span data-i18n="basemap.fieldMatrixPrefix">Matrix prefix</span><input class="basemap-input code" id="basemap-form-matrix-prefix" maxlength="160" autocomplete="off" data-i18n-placeholder="basemap.matrixPrefixPlaceholder"></label>
+            <label class="basemap-field basemap-type-field" data-basemap-types="wms,wmts"><span data-i18n="basemap.fieldFormat">Image format</span><select class="basemap-select" id="basemap-form-format"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></label>
+            <details>
+              <summary data-i18n="basemap.advanced">Attribution and zoom levels</summary>
+              <div class="basemap-advanced-grid">
+                <label class="basemap-field" style="grid-column:1/-1"><span data-i18n="basemap.fieldAttribution">Attribution</span><input class="basemap-input" id="basemap-form-attribution" maxlength="1000" autocomplete="off"></label>
+                <label class="basemap-field" style="grid-column:1/-1"><span data-i18n="basemap.fieldSourceUrl">Official source URL</span><input class="basemap-input code" id="basemap-form-source-url" maxlength="4096" inputmode="url" autocomplete="off"></label>
+                <label class="basemap-field"><span data-i18n="basemap.fieldMinZoom">Min zoom</span><input class="basemap-input" id="basemap-form-min-zoom" type="number" min="0" max="24" value="0"></label>
+                <label class="basemap-field"><span data-i18n="basemap.fieldMaxZoom">Max zoom</span><input class="basemap-input" id="basemap-form-max-zoom" type="number" min="0" max="24" value="19"></label>
+                <label class="basemap-field"><span data-i18n="basemap.fieldNativeZoom">Native max</span><input class="basemap-input" id="basemap-form-native-zoom" type="number" min="0" max="24" value="19"></label>
+              </div>
+            </details>
+            <label class="basemap-default-toggle"><input id="basemap-form-default" type="checkbox"><span data-i18n="basemap.setDefaultAfterSave">Set as default after saving</span></label>
+          </div>
+          <div class="basemap-form-status" id="basemap-form-status" aria-live="polite"></div>
+          <div class="basemap-form-actions">
+            <button class="basemap-form-button" id="basemap-test-btn" type="button">__EASYGEE_ICON_REFRESH__<span data-i18n="basemap.test">Test current view</span></button>
+            <button class="basemap-form-button primary" id="basemap-save-btn" type="submit" disabled><span data-i18n="basemap.save">Save basemap</span></button>
+          </div>
+        </form>
+        <div class="basemap-list" id="basemap-list"></div>
+      </div>
+    </aside>
+
+    <aside class="panel left layers-panel">
+      <div class="panel-head"><div class="panel-title" data-i18n="panel.layers">Layers</div><span class="tag" id="layer-count"></span><button class="icon-btn panel-close mobile-only" data-close-panel="layers-panel" title="Close" aria-label="Close" data-i18n-title="tool.close">__EASYGEE_ICON_CLOSE__</button></div>
+      <div class="panel-body">
+        <div class="section-title" data-i18n="section.layerStack">Layer Stack</div>
+        <div class="layer-list" id="layer-list"></div>
+      </div>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map"></div>
+      <div class="mode-chip" id="mode-chip"></div>
+      <button class="measure-undo-btn" id="measure-undo-btn" type="button" hidden disabled title="Undo last step" aria-label="Undo last step" data-i18n-title="tool.measureUndo">__EASYGEE_ICON_UNDO__<span data-i18n="tool.measureUndo">Undo last step</span></button>
+      <div class="simple-scale" id="simple-scale"><div class="scale-label" id="scale-label"></div><div class="scale-track" id="scale-track"></div></div>
+    </main>
+
+    <aside class="panel right">
+      <div class="panel-head"><div class="panel-title" data-i18n="panel.inspector">Inspector</div><span class="tag" id="click-state">idle</span><button class="icon-btn panel-close mobile-only" data-close-panel="right" title="Close" aria-label="Close" data-i18n-title="tool.close">__EASYGEE_ICON_CLOSE__</button></div>
+      <div class="panel-body">
+        <section class="right-card">
+          <h2 data-i18n="card.mapClick">Map Click</h2>
+          <div class="kv">
+            <div class="kv-row"><div class="kv-key" data-i18n="key.latitude">Latitude</div><div class="kv-value" id="lat-value">-</div></div>
+            <div class="kv-row"><div class="kv-key" data-i18n="key.longitude">Longitude</div><div class="kv-value" id="lon-value">-</div></div>
+            <div class="kv-row"><div class="kv-key" data-i18n="key.zoom">Zoom</div><div class="kv-value" id="zoom-value">-</div></div>
+          </div>
+        </section>
+        <section class="right-card">
+          <h2 data-i18n="card.activeLayer">Active Layer</h2>
+          <div class="kv">
+            <div class="kv-row"><div class="kv-key" data-i18n="key.name">Name</div><div class="kv-value" id="detail-name">-</div></div>
+            <div class="kv-row"><div class="kv-key" data-i18n="key.dataset">Dataset</div><div class="kv-value" id="detail-dataset">-</div></div>
+            <div class="kv-row"><div class="kv-key" data-i18n="key.type">Type</div><div class="kv-value" id="detail-type">-</div></div>
+            <div class="kv-row"><div class="kv-key" data-i18n="key.recipe">Recipe</div><div class="kv-value" id="detail-recipe">-</div></div>
+            <div class="kv-row"><div class="kv-key" data-i18n="key.opacity">Opacity</div><div class="kv-value" id="detail-opacity">-</div></div>
+          </div>
+        </section>
+        <section class="right-card">
+          <h2 data-i18n="card.legend">Legend</h2>
+          <div class="legend" id="legend"></div>
+        </section>
+        <section class="right-card">
+          <h2 data-i18n="card.tasks">Tasks</h2>
+          <div class="task-list" id="task-list"></div>
+        </section>
+      </div>
+    </aside>
+
+    <footer class="bottom">
+      <section class="bottom-section">
+        <div class="quota-head">
+          <div>
+            <div class="bottom-title" data-i18n="bottom.project">Quotas</div>
+            <div class="quota-project" id="quota-project"></div>
+            <div class="quota-tier" id="quota-tier"></div>
+          </div>
+          <a class="quota-link-mini" id="quota-link" target="_blank" rel="noreferrer" data-i18n="link.quota">Console</a>
+        </div>
+        <div class="quota-stat-grid">
+          <div class="quota-stat"><span data-i18n="quota.items">Quota items</span><strong id="quota-count">0</strong></div>
+          <div class="quota-stat"><span data-i18n="quota.measured">Measured</span><strong id="quota-used-summary">-</strong></div>
+          <div class="quota-stat"><span data-i18n="quota.alerts">Alerts</span><strong id="quota-remaining-summary">-</strong></div>
+        </div>
+        <div class="quota-summary" id="quota-summary"></div>
+        <div class="quota-list" id="quota-list"></div>
+      </section>
+    </footer>
+  </div>
+
+  <script src="__EASYGEE_LEAFLET_SRC__" crossorigin=""></script>
+  <script src="__EASYGEE_PMTILES_SRC__" crossorigin=""></script>
+  <script>
+__EASYGEE_CONSOLE_JS__
+  </script>
+</body>
+</html>

@@ -139,3 +139,11 @@ quality-score bias, and explicit missing periods.
 - Mixes Sentinel-1 pass/relative orbit or divides dB values as a power ratio.
 - Describes a reducer or quality mosaic as one real acquisition and omits
   valid-observation count/source date.
+
+## Scripts
+
+- Use `scripts/audit_skill_coverage.py` after editing this skill to check that
+  core references, scripts, source markers, planners, routers, and reviewer
+  findings still work offline.
+- Use `scripts/run_evaluation_prompts.py` to regression-test the eleven
+  evaluation prompts across task planning, geemap routing, and dataset search.

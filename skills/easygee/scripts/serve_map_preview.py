@@ -29,7 +29,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from xml.etree import ElementTree
 
-from easygee_project import write_text_atomic_with_fallback
+from easygee_project import workspace_root, write_text_atomic_with_fallback
 
 
 @dataclass(frozen=True)
@@ -43,11 +43,7 @@ class PreviewPlan:
 
 
 def default_preview_root() -> Path:
-    if os.name == "nt":
-        scratch = Path("D:/Scratch")
-        if scratch.exists() or scratch.parent.exists():
-            return scratch / "easygee-preview"
-    return Path(tempfile.gettempdir()) / "easygee-preview"
+    return workspace_root() / "preview"
 
 
 def write_placeholder(root: Path, title: str) -> Path:

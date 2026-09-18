@@ -96,3 +96,10 @@ debugging, not a substitute for task metadata persisted in the EasyGEE workbench
   before changing the scientific method.
 - Do not submit many tasks silently. Show the tile count and ask/confirm when
   task count, Drive clutter, or quota pressure is likely.
+
+## Operating Rules
+
+- Treat boundary and compute risk as a separate gate. Use bbox/simplified
+  geometry for coarse filtering when helpful, exact AOI for final statistics or
+  exports when needed, and tiled export only for tile-safe algorithms after
+  reporting tile count and task naming.

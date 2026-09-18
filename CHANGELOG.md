@@ -1,5 +1,50 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `scripts/install.py`: one cross-platform installer that creates a shared
+  Python environment, records it as `pythonPath` in settings.json, and
+  registers EasyGEE with Codex, Claude Code, Qoder, or any `--skills-dir`;
+  `--print-mcp-config` for other MCP clients, `--uninstall`/`--purge`,
+  `--dry-run`. Re-running it refreshes each host's cached copy, including
+  when the version number has not changed.
+- `.claude-plugin/marketplace.json` so Claude Code can install from a local
+  checkout; Claude's manifest declares the MCP server with
+  `${CLAUDE_PLUGIN_ROOT}`.
+- MCP `resources/list` and `resources/read` expose the skill and reference
+  documents to MCP clients without skill support.
+- `requirements.txt` and `requirements-vector.txt`.
+
+### Changed
+
+- The MCP server launches with `python` directly (no PowerShell launcher) and
+  needs only the standard library; Earth Engine scripts run with
+  `EASYGEE_PYTHON` or `pythonPath`, so hosts that filter environment
+  variables still find the right interpreter.
+- Workspace, cache, and gcloud locations resolve from `EASYGEE_WORKSPACE`,
+  `EASYGEE_CACHE_DIR`, `EASYGEE_GCLOUD_ROOT` or settings.json, with defaults
+  under the EasyGEE user directory instead of fixed `D:` paths. An existing
+  gcloud install at the previous Windows default (`D:\Dev\tools\google-cloud-sdk`)
+  is still found.
+- `skills/easygee/SKILL.md` is now a short router (33 KB → 7 KB); detailed
+  guidance moved verbatim into `references/`.
+- GeoMaster and GEE Growth Diary moved to `extras/` and are read on demand by
+  the easygee skill instead of being registered as separate skills.
+- Map Console HTML, CSS, and JavaScript moved from `create_map_console.py`
+  into `skills/easygee/assets/map-console/`; generated pages are unchanged.
+
+### Removed
+
+- Duplicate logo files (about 3 MB), session hooks, the `/easygee` command
+  (the skill is invocable directly), `scripts/run-easygee-mcp.ps1`, and the
+  per-host `adapters/` notes (replaced by the installer).
+
+### Fixed
+
+- The MCP server no longer answers JSON-RPC notifications.
+
 ## 0.4.1 - 2026-09-17
 
 ### Added

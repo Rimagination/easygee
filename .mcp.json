@@ -1,16 +1,12 @@
 {
   "mcpServers": {
     "easygee": {
-      "command": "powershell",
+      "command": "python",
       "cwd": ".",
       "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "./scripts/run-easygee-mcp.ps1"
+        "./scripts/easygee_mcp_server.py"
       ],
-      "note": "Launches the local EasyGEE stdio MCP server for GEE/geemap readiness, auth planning, catalog search, quota summaries, and map console generation."
+      "note": "Launches the local EasyGEE stdio MCP server for GEE/geemap readiness, auth planning, catalog search, quota summaries, and map console generation. The server needs only the standard library; Earth Engine scripts run with EASYGEE_PYTHON or pythonPath from settings.json."
     }
   }
 }

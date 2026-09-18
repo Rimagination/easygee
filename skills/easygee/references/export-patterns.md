@@ -114,3 +114,20 @@ When answering the user after an export action, report:
 - `region`: AOI source and approximate extent,
 - `scale/projection`: scale, CRS/transform assumption,
 - `status`: prepared or started, plus how to monitor/open the result.
+
+## Scripts
+
+- Use `scripts/plan_gee_export.py "<export request>" --json` before handling
+  natural-language export/download requests. It classifies product type,
+  destination, backend (`ee.batch.Export.*`, geemap local helper, or map
+  export), format, AOI source, scale, ImageCollection materialization, missing
+  parameters, and the task lifecycle policy.
+
+## Operating Rules
+
+- Treat export requests as a structured contract. Parse product kind
+  (raster/table/vector/map/video), destination, format, AOI, scale/CRS,
+  ImageCollection reducer, naming, and start policy before creating tasks. For
+  durable workbench exports, prefer direct `ee.batch.Export.*` calls so EasyGEE
+  can persist task id, status, destination, and parameters; use geemap local
+  download helpers mainly for notebook-scale local outputs.

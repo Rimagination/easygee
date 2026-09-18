@@ -7,8 +7,8 @@ over writing these templates from memory.
 ## Template Generator
 
 ```bash
-python scripts/scaffold_gee_template.py D:\Scratch\s2_ndvi.ipynb --profile s2-ndvi-cloud-score --project YOUR_EE_PROJECT
-python scripts/scaffold_gee_template.py D:\Scratch\flood.py --mode script --profile s1-flood-area --project YOUR_EE_PROJECT
+python scripts/scaffold_gee_template.py <EASYGEE_WORKSPACE>/s2_ndvi.ipynb --profile s2-ndvi-cloud-score --project YOUR_EE_PROJECT
+python scripts/scaffold_gee_template.py <EASYGEE_WORKSPACE>/flood.py --mode script --profile s1-flood-area --project YOUR_EE_PROJECT
 ```
 
 List available profiles:
@@ -50,3 +50,8 @@ All templates:
   `geemap.shp_to_ee` or `geemap.geojson_to_ee`, and check CRS/validity/privacy.
 - If the deliverable is a notebook, run `scripts/review_ee_code.py` on it
   before handoff and explain any remaining warnings.
+
+## Scripts
+
+- Use `scripts/scaffold_gee_template.py <output> --profile <profile>` for
+  stronger task-specific starter notebooks/scripts.

@@ -25,7 +25,7 @@
 
 ```powershell
 python skills/easygee/scripts/cloud_mask_comparison.py
-python skills/easygee/scripts/serve_map_preview.py D:/Scratch/easygee-cloud-mask-comparison/cloud-mask-comparison.html
+python skills/easygee/scripts/serve_map_preview.py <EASYGEE_WORKSPACE>/easygee-cloud-mask-comparison/cloud-mask-comparison.html
 ```
 
 脚本会生成：

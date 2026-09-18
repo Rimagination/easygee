@@ -1,0 +1,8 @@
+# Optional: multimodal-geo-vector skill (install.py --with-vector).
+-r requirements.txt
+geopandas
+numpy
+pillow
+rasterio
+scikit-image
+shapely

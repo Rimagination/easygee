@@ -437,7 +437,7 @@ def audit(skill_dir: Path) -> list[Check]:
     for expected in (
         "EasyGEE Google Cloud CLI fixed resource",
         "fixed root",
-        "D:\\Dev\\tools\\google-cloud-sdk",
+        "google-cloud-sdk",
         "Standard one-command setup",
     ):
         add(checks, expected in gcloud_text, f"gcloud-resource-contains:{expected}", gcloud_text.strip())

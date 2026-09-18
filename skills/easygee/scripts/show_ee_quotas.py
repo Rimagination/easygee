@@ -199,13 +199,8 @@ def find_gcloud() -> str | None:
     env_gcloud = os.environ.get("EASYGEE_GCLOUD")
     if env_gcloud:
         candidates.append(env_gcloud)
-    if os.name == "nt":
-        candidates.extend(
-            [
-                r"D:\Dev\tools\google-cloud-sdk\bin\gcloud.cmd",
-                r"D:\Dev\tools\google-cloud-sdk\bin\gcloud",
-            ]
-        )
+    fixed_bin = easygee_project.gcloud_root() / "bin"
+    candidates.extend([str(fixed_bin / "gcloud.cmd"), str(fixed_bin / "gcloud")] if os.name == "nt" else [str(fixed_bin / "gcloud")])
     which = shutil.which("gcloud")
     if which:
         candidates.append(which)

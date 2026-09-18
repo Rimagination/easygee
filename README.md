@@ -37,18 +37,21 @@ EasyGEE 把 Google Earth Engine、geemap、GeoMaster 方法知识和本地浏览
 ```text
 easygee/
 ├── .codex-plugin/       # Codex 插件元数据
-├── .claude-plugin/      # Claude 插件元数据
-├── assets/              # EasyGEE 图标与 logo
-├── commands/            # Claude-style 命令入口
-├── hooks/               # Hook 配置与轻量脚本
-├── scripts/             # EasyGEE MCP server 启动入口
+├── .claude-plugin/      # Claude Code 插件与 marketplace 元数据
+├── .mcp.json            # MCP 服务声明（Codex 与其他 MCP 客户端）
+├── assets/              # EasyGEE logo
+├── commands/            # Claude Code 快捷命令
+├── scripts/             # MCP 服务与安装器（install.py）
 ├── skills/
 │   ├── easygee/         # GEE / geemap / 地图工作台与遥感方法工作流
-│   │   ├── references/  # QA、HLS、SAR、时间合成和 GeoAI 方法资料
+│   │   ├── references/  # 按需读取的方法资料
+│   │   ├── assets/      # 地图工作台前端模板
 │   │   └── scripts/     # 数据检索、任务路由、案例和离线评测
-│   ├── geomaster/       # 本地 GIS 与遥感方法知识
-│   └── gee-growth-diary/ # GEEer成长日记蒸馏方法库
-└── adapters/            # Codex、Claude、Zcode、Qoder 适配说明
+│   └── multimodal-geo-vector/ # 影像标注转 CRS 矢量
+├── extras/
+│   ├── geomaster/       # 本地 GIS 与遥感方法知识（由 easygee 按需读取）
+│   └── gee-growth-diary/ # GEEer成长日记蒸馏方法库（由 easygee 按需读取）
+└── requirements*.txt    # Python 依赖
 ```
 
 </details>
@@ -63,31 +66,39 @@ easygee/
 帮我安装这个插件：[Rimagination/easygee](https://github.com/Rimagination/easygee)
 ```
 
-Agent 看到这句话后应完成四件事：克隆或更新仓库、写入个人 marketplace、校验插件、在可用时执行 `codex plugin add easygee@local-plugins`。
+Agent 应克隆仓库到 `~/plugins/easygee`，再运行 `python scripts/install.py`。
 
-在 Windows 上也可以直接运行这一行：
+也可以手动运行（需要 Python 3.9+ 和 git）：
+
+```bash
+git clone https://github.com/Rimagination/easygee.git ~/plugins/easygee
+python ~/plugins/easygee/scripts/install.py
+```
+
+Windows 上也可以运行这一行，它会克隆或更新仓库并调用同一个安装器：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command '$p=Join-Path $HOME "plugins\easygee"; if(Test-Path $p){ git -C $p pull --ff-only } else { gh repo clone Rimagination/easygee $p }; & (Join-Path $p "scripts\install-easygee.ps1")'
+powershell -NoProfile -ExecutionPolicy Bypass -Command '$p=Join-Path $HOME "plugins\easygee"; if(Test-Path $p){ git -C $p pull --ff-only } else { git clone https://github.com/Rimagination/easygee.git $p }; & (Join-Path $p "scripts\install-easygee.ps1")'
 ```
 
-默认安装位置是：
+安装器完成两件事：
 
-```text
-%USERPROFILE%\plugins\easygee
-```
+1. 在 EasyGEE 用户目录下创建 Python 环境（有 uv 时用 uv），安装 `requirements.txt`，并把解释器路径写入 `settings.json`。所有 Agent 共用这个环境。
+2. 向本机检测到的 Agent 注册：Codex 与 Claude Code 通过各自的插件命令注册，Qoder 通过技能目录链接接入。
 
-安装脚本会把插件路径加入本地 marketplace。Codex 会从这里发现 EasyGEE：
+常用参数：
 
-```text
-C:\Users\Liang\.agents\plugins\marketplace.json
-```
+| 参数 | 作用 |
+| --- | --- |
+| `--hosts codex,claude,qoder` | 指定要注册的 Agent；默认 `auto`，按本机检测结果 |
+| `--skills-dir <目录>` | 把技能链接到任意读取 `SKILL.md` 的 Agent 目录 |
+| `--python <路径>` | 使用已有的 Python 环境，不新建 |
+| `--with-vector` | 同时安装多模态矢量化依赖 |
+| `--print-mcp-config` | 输出 MCP 配置片段，供其他 MCP 客户端粘贴 |
+| `--uninstall` / `--purge` | 取消注册；`--purge` 同时删除 Python 环境 |
+| `--dry-run` | 只显示将执行的操作 |
 
-安装脚本也会校验插件结构；手动校验命令是：
-
-```powershell
-python C:\Users\Liang\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py C:\Users\Liang\plugins\easygee
-```
+EasyGEE 用户目录：Windows 为 `%LOCALAPPDATA%\EasyGEE`，其他系统为 `~/.config/easygee`。工作区、缓存与解释器路径可在 `settings.json` 中修改，或用环境变量 `EASYGEE_WORKSPACE`、`EASYGEE_CACHE_DIR`、`EASYGEE_PYTHON` 覆盖。
 
 ### 2. 快速使用
 
