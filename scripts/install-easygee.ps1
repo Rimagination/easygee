@@ -13,12 +13,18 @@ $ErrorActionPreference = "Stop"
 
 if (Test-Path (Join-Path $PluginDir ".git")) {
   if (-not $SkipPull) {
+    $currentBranch = git -C $PluginDir branch --show-current
+    if ($LASTEXITCODE -ne 0 -or $currentBranch -ne $Branch) {
+      throw "Expected branch '$Branch' in $PluginDir; switch branches explicitly before updating."
+    }
     git -C $PluginDir pull --ff-only origin $Branch
+    if ($LASTEXITCODE -ne 0) { throw "Updating EasyGEE failed; installation stopped." }
   }
 } elseif (Test-Path $PluginDir) {
   throw "Target exists but is not a git checkout: $PluginDir"
 } else {
   git clone --branch $Branch $Repo $PluginDir
+  if ($LASTEXITCODE -ne 0) { throw "Cloning EasyGEE failed; installation stopped." }
 }
 
 $python = Get-Command python -ErrorAction SilentlyContinue

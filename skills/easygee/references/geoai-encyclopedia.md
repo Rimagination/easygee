@@ -4,7 +4,7 @@ Use this reference when an EasyGEE request asks to execute a remote-sensing AI
 method, choose a model family, prepare training data, run inference, or evaluate
 spatial predictions. The bundled method library is a self-contained snapshot of
 the `geoai-with-python` skill at
-`references/geoai-with-python/SKILL.md`; it keeps the book's task-oriented
+`references/geoai-with-python/README.md`; it keeps the book's task-oriented
 chapters, patterns, glossary, cheatsheet, and source map available inside the
 EasyGEE plugin.
 
@@ -79,7 +79,7 @@ EasyGEE/GeoMaster references when the workflow touches GEE or GIS.
 | Vision-language models | `geoai-with-python/chapters/ch15-vision-language-models.md` | `ch20` for QGIS |
 | Satellite embeddings | `geoai-with-python/chapters/ch16-satellite-embeddings.md` | `ch03`, `ch06`, `ch07` |
 | QGIS GeoAI | `geoai-with-python/chapters/ch17-qgis-plugin-setup.md` | `ch18`–`ch23` as applicable |
-| Training/inference design | `geoai-with-python/SKILL.md` | `geoai-with-python/references/qgis-training-inference.md` |
+| Training/inference design | `geoai-with-python/README.md` | `geoai-with-python/references/qgis-training-inference.md` |
 
 The cross-cutting files are:
 

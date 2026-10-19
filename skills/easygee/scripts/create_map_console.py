@@ -130,8 +130,8 @@ MAP_CONSOLE_TOKEN = re.compile(r"__EASYGEE_([A-Z0-9_]+)__")
 
 @functools.lru_cache(maxsize=None)
 def map_console_asset(name: str) -> str:
-    """Return a Map Console asset as UTF-8 text with its LF newlines untouched."""
-    return (MAP_CONSOLE_ASSETS_DIR / name).read_bytes().decode("utf-8")
+    """Return a UTF-8 Map Console asset with platform newlines normalized to LF."""
+    return (MAP_CONSOLE_ASSETS_DIR / name).read_text(encoding="utf-8")
 
 
 @functools.lru_cache(maxsize=None)

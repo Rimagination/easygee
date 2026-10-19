@@ -75,10 +75,10 @@ git clone https://github.com/Rimagination/easygee.git ~/plugins/easygee
 python ~/plugins/easygee/scripts/install.py
 ```
 
-On Windows, this one-liner clones or updates the repository and runs the same installer:
+After cloning, Windows users can update the checkout and rerun installation with:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command '$p=Join-Path $HOME "plugins\easygee"; if(Test-Path $p){ git -C $p pull --ff-only } else { git clone https://github.com/Rimagination/easygee.git $p }; & (Join-Path $p "scripts\install-easygee.ps1")'
+powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\plugins\easygee\scripts\install-easygee.ps1"
 ```
 
 The installer does two things:
@@ -99,6 +99,10 @@ Common options:
 | `--dry-run` | Show the actions without running them |
 
 EasyGEE user directory: `%LOCALAPPDATA%\EasyGEE` on Windows, `~/.config/easygee` elsewhere. Workspace, cache, and interpreter paths can be changed in `settings.json` or overridden with `EASYGEE_WORKSPACE`, `EASYGEE_CACHE_DIR`, and `EASYGEE_PYTHON`.
+
+After updating the checkout, rerun the installer to update registration. Codex refreshes through `plugin add`; Claude Code uses `plugin update` and caches by version, so releases must increment both `plugin.json` versions together. Existing registrations stay in place during upgrades; a failed Codex install restores the original marketplace file. A Claude marketplace with the same name and another source produces a conflict message.
+
+MCP tool approvals follow each agent host's settings. Authorize GEE requests, quota use, and local map generation according to the tool being called.
 
 ### 2. Quick Use
 

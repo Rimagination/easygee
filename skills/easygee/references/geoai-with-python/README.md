@@ -1,20 +1,13 @@
----
-name: geoai-with-python
-description: "Execute open-source GeoAI workflows from Qiusheng Wu's GeoAI with Python: acquire and inspect geospatial data, prepare training chips, train or apply models for recognition, detection, segmentation, translation, change detection, and pixel regression, use foundation models and embeddings, and run the same workflows in QGIS."
-allowed-tools:
-  - Read
-  - Grep
-  - shell_command
-argument-hint: [task, dataset, model, chapter, or error]
----
-
 # GeoAI with Python
 
 **Source**: Qiusheng Wu, *GeoAI with Python: A Practical Guide to Open-Source Geospatial AI*  
 **Edition context**: official web book, 430-page print edition, 23 chapters  
 **Generated**: 2026-08-01
 
-## How to use this skill
+## How to use this guide
+
+Read this reference through the EasyGEE router. The plugin registers only the
+top-level `easygee` and `multimodal-geo-vector` skills.
 
 - Ask for a workflow: “map water bodies from Sentinel-2”, “train a building detector”, or “compare two dates”. I will choose a task, data contract, baseline, and validation plan.
 - Ask for a chapter or topic: `ch09`, `STAC`, `SAM`, `QGIS`, `tile overlap`, or `embeddings`. I will read the linked chapter before answering.
@@ -137,4 +130,4 @@ For pixel regression, constrain valid ranges, mask invalid target pixels, evalua
 
 ## Scope and limits
 
-This skill synthesizes the official book and repository into an execution guide; it is not a substitute for current package documentation. APIs, model access, datasets, and QGIS plugin behavior can change. Verify live official sources before production use, and do not treat model predictions as authoritative measurements without domain validation.
+This guide synthesizes the official book and repository into an execution guide. APIs, model access, datasets, and QGIS plugin behavior can change. Verify live official sources before production use, and validate model predictions in the target domain before treating them as measurements.

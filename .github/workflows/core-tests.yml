@@ -1,0 +1,32 @@
+name: Core Python checks
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            python: '3.12'
+          - os: ubuntu-latest
+            python: '3.9'
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+      EASYGEE_USER_CONFIG_DIR: ${{ runner.temp }}/easygee
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install pytest
+      # Vector tests use the optional geospatial stack; these jobs cover the stdlib core.
+      - run: python -m pytest -q tests --ignore=tests/test_multimodal_geo_vector.py
+      - run: python skills/easygee/scripts/audit_skill_coverage.py

@@ -75,10 +75,10 @@ git clone https://github.com/Rimagination/easygee.git ~/plugins/easygee
 python ~/plugins/easygee/scripts/install.py
 ```
 
-Windows 上也可以运行这一行，它会克隆或更新仓库并调用同一个安装器：
+Windows 上，克隆完成后可通过包装脚本更新仓库并重新安装：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command '$p=Join-Path $HOME "plugins\easygee"; if(Test-Path $p){ git -C $p pull --ff-only } else { git clone https://github.com/Rimagination/easygee.git $p }; & (Join-Path $p "scripts\install-easygee.ps1")'
+powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\plugins\easygee\scripts\install-easygee.ps1"
 ```
 
 安装器完成两件事：
@@ -99,6 +99,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command '$p=Join-Path $HOME "plug
 | `--dry-run` | 只显示将执行的操作 |
 
 EasyGEE 用户目录：Windows 为 `%LOCALAPPDATA%\EasyGEE`，其他系统为 `~/.config/easygee`。工作区、缓存与解释器路径可在 `settings.json` 中修改，或用环境变量 `EASYGEE_WORKSPACE`、`EASYGEE_CACHE_DIR`、`EASYGEE_PYTHON` 覆盖。
+
+更新仓库后重新运行安装器即可更新注册。Codex 使用 `plugin add` 刷新；Claude Code 使用 `plugin update`，其缓存按版本更新，因此发布改动时需同步递增两份 `plugin.json` 的版本号。升级期间保留已有插件注册；Codex 安装失败时恢复原 marketplace 文件。Claude 中同名 marketplace 指向其他来源时，安装器会停止并说明冲突。
+
+MCP 工具审批沿用各 Agent Host 的设置。GEE 请求、配额消耗与本地地图生成按具体工具授权。
 
 ### 2. 快速使用
 

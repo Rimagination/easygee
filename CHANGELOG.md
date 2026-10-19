@@ -8,8 +8,8 @@
   Python environment, records it as `pythonPath` in settings.json, and
   registers EasyGEE with Codex, Claude Code, Qoder, or any `--skills-dir`;
   `--print-mcp-config` for other MCP clients, `--uninstall`/`--purge`,
-  `--dry-run`. Re-running it refreshes each host's cached copy, including
-  when the version number has not changed.
+  `--dry-run`. Re-running it uses the hosts' native install/update commands;
+  Claude Code cache updates require a new plugin version.
 - `.claude-plugin/marketplace.json` so Claude Code can install from a local
   checkout; Claude's manifest declares the MCP server with
   `${CLAUDE_PLUGIN_ROOT}`.
@@ -32,6 +32,10 @@
   guidance moved verbatim into `references/`.
 - GeoMaster and GEE Growth Diary moved to `extras/` and are read on demand by
   the easygee skill instead of being registered as separate skills.
+- The nested GeoAI entry is `geoai-with-python/README.md`, so the plugin
+  registers only the top-level EasyGEE and multimodal vector skills.
+- Both plugin manifests use version `0.4.2` so existing `0.4.1` installations
+  receive the updated bundle through native host updates.
 - Map Console HTML, CSS, and JavaScript moved from `create_map_console.py`
   into `skills/easygee/assets/map-console/`; generated pages are unchanged.
 
@@ -44,6 +48,13 @@
 ### Fixed
 
 - The MCP server no longer answers JSON-RPC notifications.
+- Host upgrades preserve existing registrations. Codex marketplace writes
+  are atomic and restore the original file if installation fails; failed
+  uninstalls stop before purging the shared environment.
+- The Windows installer stops after Git failures and refuses to pull a
+  requested branch into a different checked-out branch.
+- Map Console assets normalize platform newlines before template assembly,
+  so Windows CRLF checkouts render successfully.
 
 ## 0.4.1 - 2026-09-17
 

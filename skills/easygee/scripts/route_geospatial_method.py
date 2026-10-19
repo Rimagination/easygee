@@ -226,7 +226,7 @@ def route(prompt: str) -> MethodRoute:
     needs_geoai = bool(geoai_hits) or (bool(ml_hits) and has_gee)
     if needs_geoai:
         add_unique(read, "geoai-encyclopedia.md")
-        add_unique(read, "geoai-with-python/SKILL.md")
+        add_unique(read, "geoai-with-python/README.md")
         add_many(read, geoai_chapters(text))
         add_unique(artifacts, "geoai_method_or_model")
         add_unique(next_actions, "Read geoai-encyclopedia.md and the smallest task chapter before choosing a custom model.")
@@ -263,7 +263,7 @@ def print_text(result: MethodRoute) -> None:
 
 def smoke() -> None:
     cases = [
-        ("Use GEE Sentinel-2 for semantic segmentation and train locally", "hybrid", "earth_engine_plus_local", {"geoai-encyclopedia.md", "geoai-with-python/SKILL.md", "geoai-with-python/chapters/ch09-semantic-segmentation.md"}),
+        ("Use GEE Sentinel-2 for semantic segmentation and train locally", "hybrid", "earth_engine_plus_local", {"geoai-encyclopedia.md", "geoai-with-python/README.md", "geoai-with-python/chapters/ch09-semantic-segmentation.md"}),
         ("用 GEE 算北京朝阳公园 NDVI 并导出表格", "gee_first", "earth_engine", {"gee-agent-playbook.md", "dataset-qa-patterns.md", "task-patterns.md"}),
         ("本地 GeoTIFF 计算 NDVI 并保存 COG", "local_first", "local_python", {"geomaster:core-libraries.md", "geomaster:remote-sensing.md", "geomaster:big-data.md"}),
         ("GEE 获取 Sentinel-2，导出 COG 后用本地模型分类", "hybrid", "earth_engine_plus_local", {"gee-agent-playbook.md", "geomaster:machine-learning.md", "geomaster:big-data.md"}),

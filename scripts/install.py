@@ -21,6 +21,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,24 +41,48 @@ def step(message: str) -> None:
     print(f"==> {message}", flush=True)
 
 
-def run(command: list[str], *, check: bool = True, quiet: bool = False) -> int:
+def run(command: list[str]) -> int:
     print("    $ " + subprocess.list2cmdline(command), flush=True)
     if DRY_RUN:
         return 0
     # npm-installed CLIs are .cmd shims on Windows; resolve them explicitly.
-    output = subprocess.DEVNULL if quiet else None
-    code = subprocess.call([shutil.which(command[0]) or command[0], *command[1:]], stdout=output, stderr=output)
-    if check and code != 0:
+    code = subprocess.call([shutil.which(command[0]) or command[0], *command[1:]])
+    if code != 0:
         raise SystemExit(f"command failed with exit code {code}: {command[0]}")
     return code
+
+
+def write_bytes_atomic(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "wb") as temporary:
+            temporary.write(data)
+        os.replace(name, path)
+    finally:
+        Path(name).unlink(missing_ok=True)
 
 
 def write_json(path: Path, payload: object) -> None:
     if DRY_RUN:
         print(f"    (dry run) would write {path}")
         return
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes((json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
+    write_bytes_atomic(path, (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
+
+
+def query_json(command: list[str]) -> list[dict]:
+    if DRY_RUN:
+        return []
+    try:
+        output = subprocess.check_output(
+            [shutil.which(command[0]) or command[0], *command[1:]], text=True, encoding="utf-8",
+        )
+        payload = json.loads(output)
+    except (OSError, subprocess.CalledProcessError, ValueError) as exc:
+        raise SystemExit(f"cannot inspect host registration: {exc}") from exc
+    if not isinstance(payload, list) or any(not isinstance(item, dict) for item in payload):
+        raise SystemExit(f"expected a JSON list from: {subprocess.list2cmdline(command)}")
+    return payload
 
 
 # --- Python runtime -------------------------------------------------------
@@ -69,7 +94,7 @@ def venv_python(venv: Path) -> Path:
 def ensure_runtime(python: str | None, with_vector: bool) -> str:
     uv = shutil.which("uv")
     if python:
-        target = Path(python).expanduser()
+        target = Path(python).expanduser().resolve()
         if not target.exists():
             raise SystemExit(f"--python not found: {target}")
     else:
@@ -114,12 +139,16 @@ def codex_source_path() -> str:
 
 def codex_marketplace() -> dict:
     if CODEX_MARKETPLACE.exists():
-        payload = json.loads(CODEX_MARKETPLACE.read_text(encoding="utf-8"))
+        payload = json.loads(CODEX_MARKETPLACE.read_text(encoding="utf-8-sig"))
     else:
         payload = {}
+    if not isinstance(payload, dict):
+        raise SystemExit(f"expected a JSON object in {CODEX_MARKETPLACE}")
     payload.setdefault("name", "local-plugins")
     payload.setdefault("interface", {"displayName": "Local Plugins"})
     payload.setdefault("plugins", [])
+    if not isinstance(payload["plugins"], list) or any(not isinstance(item, dict) for item in payload["plugins"]):
+        raise SystemExit(f"expected a plugins list in {CODEX_MARKETPLACE}")
     return payload
 
 
@@ -133,12 +162,20 @@ def install_codex() -> None:
         "category": "Science",
     }
     marketplace["plugins"] = [item for item in marketplace["plugins"] if item.get("name") != PLUGIN] + [entry]
-    write_json(CODEX_MARKETPLACE, marketplace)
     if CODEX_VALIDATOR.exists():
         run([sys.executable, str(CODEX_VALIDATOR), str(ROOT)])
-    # Hosts cache a copy per version; remove first so re-running refreshes it.
-    run(["codex", "plugin", "remove", f"{PLUGIN}@{marketplace['name']}"], check=False, quiet=True)
-    run(["codex", "plugin", "add", f"{PLUGIN}@{marketplace['name']}"])
+    previous = CODEX_MARKETPLACE.read_bytes() if CODEX_MARKETPLACE.exists() else None
+    write_json(CODEX_MARKETPLACE, marketplace)
+    try:
+        # Let the host replace its cached copy without uninstalling the old plugin.
+        run(["codex", "plugin", "add", f"{PLUGIN}@{marketplace['name']}"])
+    except (OSError, SystemExit, KeyboardInterrupt):
+        if not DRY_RUN:
+            if previous is None:
+                CODEX_MARKETPLACE.unlink(missing_ok=True)
+            else:
+                write_bytes_atomic(CODEX_MARKETPLACE, previous)
+        raise
 
 
 def uninstall_codex() -> None:
@@ -146,26 +183,42 @@ def uninstall_codex() -> None:
     if not CODEX_MARKETPLACE.exists():
         return
     marketplace = codex_marketplace()
-    run(["codex", "plugin", "remove", f"{PLUGIN}@{marketplace['name']}"], check=False)
+    if not any(item.get("name") == PLUGIN for item in marketplace["plugins"]):
+        return
+    run(["codex", "plugin", "remove", f"{PLUGIN}@{marketplace['name']}"])
     marketplace["plugins"] = [item for item in marketplace["plugins"] if item.get("name") != PLUGIN]
-    if marketplace["plugins"]:
-        write_json(CODEX_MARKETPLACE, marketplace)
-    elif not DRY_RUN:
-        CODEX_MARKETPLACE.unlink()
+    write_json(CODEX_MARKETPLACE, marketplace)
 
 
 def install_claude() -> None:
     step("Registering with Claude Code")
-    run(["claude", "plugin", "uninstall", f"{PLUGIN}@{PLUGIN}"], check=False, quiet=True)
-    run(["claude", "plugin", "marketplace", "remove", PLUGIN], check=False, quiet=True)
-    run(["claude", "plugin", "marketplace", "add", str(ROOT)])
-    run(["claude", "plugin", "install", f"{PLUGIN}@{PLUGIN}"])
+    marketplaces = query_json(["claude", "plugin", "marketplace", "list", "--json"])
+    existing = next((item for item in marketplaces if item.get("name") == PLUGIN), None)
+    if existing:
+        source = existing.get("path")
+        if existing.get("source") != "directory" or not source or Path(source).resolve() != ROOT.resolve():
+            raise SystemExit(f"Claude marketplace '{PLUGIN}' already uses another source; use that checkout or remove it explicitly before switching.")
+    installed = query_json(["claude", "plugin", "list", "--json"])
+    action = "update" if any(item.get("id") == f"{PLUGIN}@{PLUGIN}" and item.get("scope") == "user" for item in installed) else "install"
+    if existing:
+        run(["claude", "plugin", "marketplace", "update", PLUGIN])
+    else:
+        run(["claude", "plugin", "marketplace", "add", str(ROOT)])
+    run(["claude", "plugin", action, f"{PLUGIN}@{PLUGIN}", "--scope", "user"])
 
 
 def uninstall_claude() -> None:
     step("Removing from Claude Code")
-    run(["claude", "plugin", "uninstall", f"{PLUGIN}@{PLUGIN}"], check=False)
-    run(["claude", "plugin", "marketplace", "remove", PLUGIN], check=False)
+    installed = query_json(["claude", "plugin", "list", "--json"])
+    ours = [item for item in installed if item.get("id") == f"{PLUGIN}@{PLUGIN}" and item.get("scope") == "user"]
+    if ours:
+        run(["claude", "plugin", "uninstall", f"{PLUGIN}@{PLUGIN}", "--scope", "user"])
+    # Keep a marketplace still used by plugins in other scopes.
+    if any(str(item.get("id", "")).endswith(f"@{PLUGIN}") and item not in ours for item in installed):
+        return
+    for item in query_json(["claude", "plugin", "marketplace", "list", "--json"]):
+        if item.get("name") == PLUGIN and item.get("source") == "directory" and item.get("path") and Path(item["path"]).resolve() == ROOT.resolve():
+            run(["claude", "plugin", "marketplace", "remove", PLUGIN])
 
 
 def skill_dirs() -> list[Path]:
@@ -262,7 +315,9 @@ def main() -> int:
         for folder in args.skills_dir:
             unlink_skills(folder.expanduser())
         if args.purge:
-            venv = easygee_project.local_app_data_root() / "venv"
+            venv = easygee_project.local_app_data_root().resolve() / "venv"
+            if is_link(venv):
+                raise SystemExit(f"refusing to purge a linked Python environment: {venv}")
             step(f"Deleting {venv}")
             if venv.exists() and not DRY_RUN:
                 shutil.rmtree(venv)
