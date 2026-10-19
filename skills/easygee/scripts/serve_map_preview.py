@@ -1677,7 +1677,7 @@ def serve(plan: PreviewPlan, host: str, port: int) -> None:
 
 def smoke() -> int:
     with tempfile.TemporaryDirectory(prefix="easygee-preview-smoke-") as tmp:
-        root = Path(tmp)
+        root = Path(tmp).resolve()
         configure_profile_path(root / "profile.json")
         plan = build_plan(None, "127.0.0.1", 0, "EasyGEE Smoke", root)
         if not Path(plan.target).exists():
