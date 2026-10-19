@@ -1,6 +1,6 @@
 {
   "name": "easygee",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Google Earth Engine and geemap workflow bundle with bilingual 5,000+ dataset discovery, multimodal CRS-vector export, a persistent high-performance Map Console, GeoMaster, GeoAI Encyclopedia, GEE Growth Diary, and a local MCP server.",
   "author": {
     "name": "Liang"
@@ -15,5 +15,13 @@
     "remote-sensing",
     "mcp"
   ],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "mcpServers": {
+    "easygee": {
+      "command": "python",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/easygee_mcp_server.py"
+      ]
+    }
+  }
 }

@@ -10,6 +10,8 @@ import urllib.request
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_DIR = ROOT / "skills" / "easygee" / "scripts"
@@ -24,6 +26,17 @@ def load_script(name: str):
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.mark.parametrize("newline", ["\n", "\r\n"])
+def test_map_console_template_accepts_platform_newlines(tmp_path: Path, monkeypatch, newline: str) -> None:
+    console = load_script("create_map_console")
+    monkeypatch.setattr(console, "MAP_CONSOLE_ASSETS_DIR", tmp_path)
+    template = "<script>\n__EASYGEE_CONSOLE_JS__\n</script>\n"
+    script = "const message = '你好';\n"
+    (tmp_path / "template.html").write_bytes(template.replace("\n", newline).encode("utf-8"))
+    (tmp_path / "console.js").write_bytes(script.replace("\n", newline).encode("utf-8"))
+    assert console.map_console_page_template() == f"<script>\n{script}</script>\n"
 
 
 def test_map_console_embeds_raster_pmtiles_adapter() -> None:

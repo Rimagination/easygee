@@ -19,6 +19,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from easygee_project import gcloud_root  # noqa: E402
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_PROJECT = "YOUR_EE_PROJECT"
 DEFAULT_LOCATION = "US"
@@ -35,13 +38,8 @@ def find_bq() -> str | None:
     env_bq = os.environ.get("EASYGEE_BQ")
     if env_bq:
         candidates.append(env_bq)
-    if os.name == "nt":
-        candidates.extend(
-            [
-                r"D:\Dev\tools\google-cloud-sdk\bin\bq.cmd",
-                r"D:\Dev\tools\google-cloud-sdk\bin\bq",
-            ]
-        )
+    fixed_bin = gcloud_root() / "bin"
+    candidates.extend([str(fixed_bin / "bq.cmd"), str(fixed_bin / "bq")] if os.name == "nt" else [str(fixed_bin / "bq")])
     which = shutil.which("bq")
     if which:
         candidates.append(which)

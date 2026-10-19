@@ -1,0 +1,3 @@
+# Core runtime for EasyGEE scripts (installed by scripts/install.py).
+earthengine-api
+geemap

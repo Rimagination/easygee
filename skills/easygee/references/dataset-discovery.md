@@ -93,3 +93,19 @@ Before generating analysis code, verify:
 Task-role recommendations are starting bundles. Do not imply that every role is
 mandatory, and do not silently collapse hazard, baseline, and exposure into a
 single dataset choice.
+
+## Scripts
+
+- Use `scripts/search_easygee_references.py "<query>"` for token-efficient
+  local recall across EasyGEE references and the distilled GEEer growth-diary
+  index. Treat results as pointers into local references, not as authority over
+  official Earth Engine docs.
+- Use `scripts/search_gee_dataset.py "<task>" --workflow` before selecting
+  datasets when compatibility with the curated workflow cards is useful.
+- Use `scripts/dataset_catalog_engine.py search "<id, theme, or task>"` as the
+  primary broad-catalog retrieval path. Use its `recommend`, `compare`,
+  `verify`, and `stats` subcommands for task-role bundles, product trade-offs,
+  final asset gates, and source coverage. Empty results must trigger
+  clarification, not a generic Sentinel/Landsat fallback. Verify official
+  entries in the Google catalog and community entries on their source page and
+  sample code before analysis.

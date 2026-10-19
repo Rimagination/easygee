@@ -13,9 +13,16 @@ from typing import Any
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = PLUGIN_ROOT / "skills" / "easygee"
 SCRIPT_ROOT = SKILL_ROOT / "scripts"
-SCRATCH_ROOT = Path("D:/Scratch/easygee-plugin")
+DOC_ROOTS = (PLUGIN_ROOT / "skills", PLUGIN_ROOT / "extras")
+RESOURCE_PREFIX = "easygee://docs/"
 SERVER_NAME = "easygee"
 SERVER_VERSION = "0.2.0"
+
+sys.path.insert(0, str(SCRIPT_ROOT))
+import easygee_project  # noqa: E402
+
+# MCP clients read stderr as UTF-8; localized Windows consoles default to e.g. GBK.
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 FRAME_MODE: str | None = None
 
@@ -132,7 +139,7 @@ TOOLS: list[dict[str, Any]] = [
                 "default_layer": {"type": "string", "description": "Default layer id such as ndvi, s2-rgb, dynamic-world, jrc-water, or srtm."},
                 "live": {"type": "boolean", "description": "Pre-populate live Earth Engine demo layers."},
                 "sample": {"type": "boolean", "description": "Generate offline sample console without Earth Engine calls."},
-                "output": {"type": "string", "description": "Optional output HTML path under D:/Scratch or D:/Data/exports."},
+                "output": {"type": "string", "description": "Optional output HTML path under the EasyGEE workspace or export directory."},
             }
         ),
     },
@@ -191,15 +198,54 @@ def _tool_text(text: str, *, is_error: bool = False) -> dict[str, Any]:
 
 
 def _safe_output_path(raw: str | None) -> Path:
+    workspace = easygee_project.workspace_root()
     if not raw:
-        return SCRATCH_ROOT / "map-console" / "index.html"
+        return workspace / "map-console" / "index.html"
     candidate = Path(raw).expanduser().resolve()
-    allowed_roots = [SCRATCH_ROOT.resolve(), Path("D:/Data/exports").resolve()]
+    allowed_roots = [root.resolve() for root in (workspace, easygee_project.export_root()) if root]
     if not any(candidate == root or root in candidate.parents for root in allowed_roots):
-        raise ValueError("output must be under D:/Scratch/easygee-plugin or D:/Data/exports")
+        raise ValueError(f"output must be under: {', '.join(str(root) for root in allowed_roots)}")
     if candidate.suffix.lower() != ".html":
         raise ValueError("output must be an .html file")
     return candidate
+
+
+def _script_python() -> str:
+    """Interpreter with earthengine-api/geemap; the server itself only needs the stdlib."""
+    configured = easygee_project.configured_python()
+    if not configured:
+        return sys.executable
+    if not Path(configured).exists():
+        raise ValueError(f"configured EasyGEE Python not found: {configured} (set EASYGEE_PYTHON or pythonPath in settings.json)")
+    return configured
+
+
+def _doc_files() -> list[Path]:
+    return sorted(path for root in DOC_ROOTS if root.exists() for path in root.rglob("*.md"))
+
+
+def _doc_uri(path: Path) -> str:
+    return RESOURCE_PREFIX + path.relative_to(PLUGIN_ROOT).as_posix()
+
+
+def list_resources() -> dict[str, Any]:
+    resources = []
+    for path in _doc_files():
+        name = path.relative_to(PLUGIN_ROOT).as_posix()
+        entry: dict[str, Any] = {"uri": _doc_uri(path), "name": name, "mimeType": "text/markdown"}
+        if path.name == "SKILL.md":
+            entry["description"] = f"Skill entry point: {path.parent.name}"
+        resources.append(entry)
+    return {"resources": resources}
+
+
+def read_resource(uri: str) -> dict[str, Any]:
+    if not uri.startswith(RESOURCE_PREFIX):
+        raise ValueError(f"unknown resource: {uri}")
+    path = (PLUGIN_ROOT / uri[len(RESOURCE_PREFIX):]).resolve()
+    if path.suffix != ".md" or not any(root.resolve() in path.parents for root in DOC_ROOTS) or not path.is_file():
+        raise ValueError(f"unknown resource: {uri}")
+    return {"contents": [{"uri": uri, "mimeType": "text/markdown", "text": path.read_text(encoding="utf-8")}]}
 
 
 def _run_script(script: str, args: list[str], timeout: int = 120) -> dict[str, Any]:
@@ -209,7 +255,7 @@ def _run_script(script: str, args: list[str], timeout: int = 120) -> dict[str, A
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
     proc = subprocess.run(
-        [sys.executable, str(script_path), *args],
+        [_script_python(), str(script_path), *args],
         cwd=str(SKILL_ROOT),
         env=env,
         text=True,
@@ -339,16 +385,20 @@ def main() -> int:
                     request_id,
                     {
                         "protocolVersion": params.get("protocolVersion") or "2025-06-18",
-                        "capabilities": {"tools": {}},
+                        "capabilities": {"tools": {}, "resources": {}},
                         "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
                     },
                 )
-            elif method == "notifications/initialized":
-                continue
+            elif "id" not in request:
+                continue  # notifications never get a response
             elif method == "ping":
                 _response(request_id, {})
             elif method == "tools/list":
                 _response(request_id, {"tools": TOOLS})
+            elif method == "resources/list":
+                _response(request_id, list_resources())
+            elif method == "resources/read":
+                _response(request_id, read_resource(str((request.get("params") or {}).get("uri"))))
             elif method == "tools/call":
                 params = request.get("params") or {}
                 _response(request_id, call_tool(str(params.get("name")), params.get("arguments") or {}))

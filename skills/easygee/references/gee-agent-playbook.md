@@ -166,3 +166,54 @@ Before presenting code:
 - Exports include task metadata and do not silently upload private data.
 - Notebook outputs do not depend on hidden state or unrecorded clicked geometry
   unless the user was explicitly asked to draw/select it.
+
+## Scripts
+
+- Use `scripts/review_ee_code.py <path.py|path.ipynb>` before handing off
+  substantial Earth Engine code; use `--strict` when warnings should fail CI.
+
+## Operating Rules
+
+- Do not call `ee.Authenticate()` automatically from reusable scripts. Put auth
+  in a setup cell, setup command, or explicit user-guided step because OAuth
+  opens a browser or asks the user to complete a code flow.
+- Keep `getInfo()` calls small and diagnostic. For large results, use
+  reducers, exports, `sample`, `aggregate_*`, or server-side transformations.
+- Treat Earth Engine objects as lazy server-side values. Avoid Python loops that
+  repeatedly call the server; map functions over `ImageCollection` or
+  `FeatureCollection` server-side.
+- Treat a map as a diagnostic instrument, not proof. A rendered tile confirms a
+  visualization request, but not export correctness, projection alignment,
+  masked-value handling, or statistical validity.
+- Use `geemap` for user-facing visual exploration and `ee` for production
+  batch work. A good notebook can still define pure functions that later move
+  into scripts.
+
+## Validation Before Finishing
+
+Before reporting a GEE/geemap task as done:
+
+1. Confirm the code imports `ee` and, when needed, `geemap`.
+2. Confirm initialization uses the intended project or clearly explains why it
+   is deferred.
+3. For notebooks, ensure maps are displayable and cells do not require hidden
+   state from earlier experiments.
+4. For exports, report the export destination, task name, scale, region, and
+   whether the task was merely created or actually started.
+5. Run `scripts/review_ee_code.py` on generated scripts/notebooks when the
+   deliverable includes non-trivial Earth Engine code.
+6. For quota tasks, state whether the numbers came from live project quota
+   APIs or the official default/fixed quota reference.
+7. When interaction routing affected the workflow, report the route mode,
+   browser policy, produced artifacts, and whether the browser was opened,
+   updated, or intentionally deferred.
+8. For GeoAI tasks, report the AI task type, selected chapter, data contract,
+   model/inference choice, spatial evaluation design, output CRS/schema, and
+   any unrun or unverifiable step.
+9. For browser previews, report the localhost URL, whether it was opened in the
+   in-app Browser, and whether map tiles/layers visibly rendered.
+10. When method routing affected the workflow, report `gee_first`,
+   `local_first`, `hybrid`, `catalog_first`, or `browser_first`, the backends
+   used, GeoMaster references consulted or deferred, and the artifact handoff.
+11. Mention any unrun pieces caused by missing credentials, quota, permissions,
+   or user authentication.

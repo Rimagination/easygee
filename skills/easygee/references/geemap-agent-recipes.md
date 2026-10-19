@@ -23,7 +23,7 @@ Choose the map backend before writing the notebook:
 For a blank workflow, prefer generating a scaffold first:
 
 ```bash
-python scripts/scaffold_geemap_workflow.py D:\Scratch\s2_ndvi.ipynb --mode notebook --project my-ee-project
+python scripts/scaffold_geemap_workflow.py <EASYGEE_WORKSPACE>/s2_ndvi.ipynb --mode notebook --project my-ee-project
 ```
 
 Then edit the generated AOI, dataset, cloud masking, reducer, and export cells
@@ -37,7 +37,7 @@ pixel-level cloud/shadow mask.
 Before handoff, run:
 
 ```bash
-python scripts/review_ee_code.py D:\Scratch\s2_ndvi.ipynb
+python scripts/review_ee_code.py <EASYGEE_WORKSPACE>/s2_ndvi.ipynb
 ```
 
 Treat warnings as review prompts. Fix real issues or record why the workflow is
@@ -197,3 +197,11 @@ A finished notebook should:
 - keep credentials and project-specific secrets out of the file,
 - preserve output paths and export task ids,
 - include a final "limitations and next checks" cell.
+
+## Scripts
+
+- Use `scripts/scaffold_geemap_workflow.py` to generate a clean notebook or
+  headless script skeleton with explicit project, AOI, dataset, probes, and
+  non-started export task code.
+- Use `scripts/choose_geemap_tool.py "<requested action>"` to route a notebook
+  or workflow action to likely geemap functions and cautions.

@@ -74,7 +74,7 @@ REQUIRED_SCRIPTS = [
 ]
 
 REQUIRED_GEOAI_FILES = [
-    "SKILL.md",
+    "README.md",
     "patterns.md",
     "glossary.md",
     "cheatsheet.md",
@@ -437,7 +437,7 @@ def audit(skill_dir: Path) -> list[Check]:
     for expected in (
         "EasyGEE Google Cloud CLI fixed resource",
         "fixed root",
-        "D:\\Dev\\tools\\google-cloud-sdk",
+        "google-cloud-sdk",
         "Standard one-command setup",
     ):
         add(checks, expected in gcloud_text, f"gcloud-resource-contains:{expected}", gcloud_text.strip())
@@ -531,7 +531,7 @@ def audit(skill_dir: Path) -> list[Check]:
             "Use GEE Sentinel-2 for semantic segmentation and train locally",
             "hybrid",
             "earth_engine_plus_local",
-            {"geoai-encyclopedia.md", "geoai-with-python/SKILL.md", "geoai-with-python/chapters/ch09-semantic-segmentation.md"},
+            {"geoai-encyclopedia.md", "geoai-with-python/README.md", "geoai-with-python/chapters/ch09-semantic-segmentation.md"},
         ),
         (
             "method-router-catalog",

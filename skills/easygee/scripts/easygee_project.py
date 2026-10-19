@@ -101,6 +101,49 @@ def save_settings(payload: dict[str, Any], path: Path | None = None) -> None:
     write_text_atomic_with_fallback(target, json.dumps(payload, ensure_ascii=False, indent=2))
 
 
+def configured_path(env_key: str, settings_key: str, default: Path) -> Path:
+    """Resolve a user path: environment variable, then settings.json, then default."""
+    explicit = os.environ.get(env_key) or load_settings().get(settings_key)
+    return Path(str(explicit)).expanduser() if explicit else default
+
+
+def workspace_root() -> Path:
+    """Default parent for generated maps, previews, and comparison pages."""
+    return configured_path("EASYGEE_WORKSPACE", "workspaceDir", local_app_data_root() / "workspace")
+
+
+def cache_root() -> Path:
+    """Persistent cache for downloaded catalogs and helper CLIs."""
+    return configured_path("EASYGEE_CACHE_DIR", "cacheDir", local_app_data_root() / "cache")
+
+
+def export_root() -> Path | None:
+    """Optional extra directory where agents may write exported artifacts."""
+    explicit = os.environ.get("EASYGEE_EXPORT_DIR") or load_settings().get("exportDir")
+    return Path(str(explicit)).expanduser() if explicit else None
+
+
+LEGACY_WINDOWS_GCLOUD_ROOT = Path(r"D:\Dev\tools\google-cloud-sdk")
+
+
+def gcloud_root() -> Path:
+    """Fixed install root for EasyGEE's managed Google Cloud CLI."""
+    explicit = os.environ.get("EASYGEE_GCLOUD_ROOT") or load_settings().get("gcloudRoot")
+    if explicit:
+        return Path(str(explicit)).expanduser()
+    if os.name == "nt":
+        # Keep finding installs made at the pre-0.5 default location.
+        if (LEGACY_WINDOWS_GCLOUD_ROOT / "bin" / "gcloud.cmd").exists():
+            return LEGACY_WINDOWS_GCLOUD_ROOT
+        return local_app_data_root() / "tools" / "google-cloud-sdk"
+    return Path("~/.local/share/easygee/google-cloud-sdk").expanduser()
+
+
+def configured_python() -> str | None:
+    """Python interpreter that has earthengine-api/geemap, if one was configured."""
+    return os.environ.get("EASYGEE_PYTHON") or load_settings().get("pythonPath") or None
+
+
 def remember_project(project: str, source: str = "manual", path: Path | None = None) -> ResolvedProject:
     project = str(project or "").strip()
     if not is_concrete_project(project):
@@ -155,13 +198,8 @@ def gcloud_candidates() -> list[str]:
     env_gcloud = os.environ.get("EASYGEE_GCLOUD")
     if env_gcloud:
         candidates.append(env_gcloud)
-    if os.name == "nt":
-        candidates.extend(
-            [
-                r"D:\Dev\tools\google-cloud-sdk\bin\gcloud.cmd",
-                r"D:\Dev\tools\google-cloud-sdk\bin\gcloud",
-            ]
-        )
+    fixed_bin = gcloud_root() / "bin"
+    candidates.extend([str(fixed_bin / "gcloud.cmd"), str(fixed_bin / "gcloud")] if os.name == "nt" else [str(fixed_bin / "gcloud")])
     which = shutil.which("gcloud")
     if which:
         candidates.append(which)

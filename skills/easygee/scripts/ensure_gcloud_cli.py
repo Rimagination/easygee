@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Ensure Google Cloud CLI is available as EasyGEE's fixed resource.
 
-The fixed Windows resource lives at D:\\Dev\\tools\\google-cloud-sdk by
-default. The script can install the official Google archive there, launch a
+The fixed resource lives under the EasyGEE user directory by default
+(override with EASYGEE_GCLOUD_ROOT). The script can install the official Google archive there, launch a
 credential-safe browser login, set the active project, and verify Earth Engine
 quota access. It never prints OAuth URLs, verification codes, access tokens, or
 credential file contents.
@@ -27,6 +27,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import easygee_project  # noqa: E402
 import show_ee_quotas  # noqa: E402
 
 
@@ -60,21 +61,11 @@ class GcloudStatus:
 
 
 def default_fixed_root() -> Path:
-    env_root = os.environ.get("EASYGEE_GCLOUD_ROOT")
-    if env_root:
-        return Path(env_root).expanduser()
-    if os.name == "nt":
-        return Path(r"D:\Dev\tools\google-cloud-sdk")
-    return Path("~/.local/share/easygee/google-cloud-sdk").expanduser()
+    return easygee_project.gcloud_root()
 
 
 def default_cache_dir() -> Path:
-    env_cache = os.environ.get("EASYGEE_CACHE_DIR")
-    if env_cache:
-        return Path(env_cache).expanduser() / "gcloud"
-    if os.name == "nt":
-        return Path(r"D:\Dev\cache\easygee\gcloud")
-    return Path("~/.cache/easygee/gcloud").expanduser()
+    return easygee_project.cache_root() / "gcloud"
 
 
 def gcloud_for_root(root: Path) -> Path:

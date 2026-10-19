@@ -30,8 +30,9 @@ Otherwise:
 - Lightweight scripts: use `uv` or the user's current Python.
 - Heavy GIS stack on Windows: prefer a fresh conda/mamba environment when
   available, because optional geospatial dependencies can be brittle.
-- Liang workspace convention: reusable envs belong under `D:\Dev\envs`, not
-  under `D:\VSP`.
+- Keep reusable envs in a dedicated environments directory, not inside a
+  project repo, and point EasyGEE at the interpreter with `EASYGEE_PYTHON` or
+  settings.json `pythonPath`.
 
 Example commands:
 
@@ -119,7 +120,8 @@ id into repository files; use placeholders in docs and tests.
 5. Verify `ee.Initialize(project="YOUR_EE_PROJECT")` with
    `scripts/check_gee_geemap.py`.
 6. Ensure Google Cloud CLI is available as the fixed EasyGEE resource at
-   `D:\Dev\tools\google-cloud-sdk` when it is missing.
+   `%LOCALAPPDATA%\EasyGEE\tools\google-cloud-sdk` (Windows default; override
+   with `EASYGEE_GCLOUD_ROOT`) when it is missing.
 7. Check Google Cloud CLI authentication without printing account tokens.
 8. Set the same Cloud project in `gcloud`.
 9. Probe Cloud Quotas and Cloud Monitoring so the browser UI can show quota
@@ -168,7 +170,9 @@ python scripts/ensure_gcloud_cli.py --project YOUR_EE_PROJECT
 python scripts/ensure_gcloud_cli.py --project YOUR_EE_PROJECT --run
 ```
 
-The standard fixed Windows location is `D:\Dev\tools\google-cloud-sdk`. Use the
+The standard fixed Windows location is
+`%LOCALAPPDATA%\EasyGEE\tools\google-cloud-sdk` (`~/.local/share/easygee/google-cloud-sdk`
+elsewhere). Use the
 bundled-Python Google Cloud CLI archive there so direct `gcloud.cmd` calls do
 not depend on the shell's PATH. This keeps the CLI out of project repos and
 makes quota tooling reusable across EasyGEE tasks. The detector also honors
@@ -226,13 +230,14 @@ Agent sequence:
 python scripts/check_gee_geemap.py --project YOUR_EE_PROJECT --initialize
 ```
 
-Local Windows example for Liang's shared environment:
+Local Windows example with an explicit shared environment (replace
+`<ENV>` with the environment directory, `<PLUGIN>` with the EasyGEE plugin root):
 
 ```powershell
-& 'D:/Dev/envs/gee-geemap/Scripts/python.exe' 'C:/Users/Liang/.codex/skills/easygee/scripts/ee_auth_workflow.py' --project YOUR_EE_PROJECT --mode localhost
-& 'D:/Dev/envs/gee-geemap/Scripts/earthengine.exe' authenticate --auth_mode=localhost
-& 'D:/Dev/envs/gee-geemap/Scripts/earthengine.exe' set_project YOUR_EE_PROJECT
-& 'D:/Dev/envs/gee-geemap/Scripts/python.exe' 'C:/Users/Liang/.codex/skills/easygee/scripts/check_gee_geemap.py' --project YOUR_EE_PROJECT --initialize
+& '<ENV>/Scripts/python.exe' '<PLUGIN>/skills/easygee/scripts/ee_auth_workflow.py' --project YOUR_EE_PROJECT --mode localhost
+& '<ENV>/Scripts/earthengine.exe' authenticate --auth_mode=localhost
+& '<ENV>/Scripts/earthengine.exe' set_project YOUR_EE_PROJECT
+& '<ENV>/Scripts/python.exe' '<PLUGIN>/skills/easygee/scripts/check_gee_geemap.py' --project YOUR_EE_PROJECT --initialize
 ```
 
 Notebook setup cell:
@@ -309,3 +314,79 @@ contents.
   is available.
 - **Service account workflows**: do not add service account keys to a repo.
   Prefer environment-managed secrets and pass credentials explicitly at runtime.
+
+## Environment Check First
+
+- Check the environment before installing or authenticating:
+   - Run `python scripts/check_gee_geemap.py` from this skill directory, or read
+     the script and run it with an explicit Python executable.
+   - Use `--project <cloud-project-id> --initialize` only when the user has
+     provided the project id or it is discoverable from the current repo config.
+
+## Scripts
+
+- Use `scripts/check_gee_geemap.py` for a quick local readiness report.
+- Use `scripts/easygee_project.py resolve --json` when an EasyGEE workflow
+  needs the user's Earth Engine / Google Cloud project id and none was passed
+  explicitly. It resolves from user-level local settings, environment,
+  Earth Engine defaults, and gcloud config without reading credential file
+  contents or writing the id into the repository.
+- Use `scripts/ensure_gcloud_cli.py --project <project>` when Google Cloud CLI
+  status, installation, login, project selection, or quota readiness is part of
+  the setup. The fixed resource location defaults to
+  `%LOCALAPPDATA%\EasyGEE\tools\google-cloud-sdk` on Windows
+  (`~/.local/share/easygee/google-cloud-sdk` elsewhere), with `EASYGEE_GCLOUD`
+  (exact CLI path) / `EASYGEE_GCLOUD_ROOT` (SDK directory) as explicit
+  overrides. Use `--run` only when the user asks for one-command setup; it may
+  install the official Google archive, open browser login, set the project, and
+  probe live quotas without printing OAuth URLs, codes, tokens, or credential
+  contents.
+- Use `scripts/ee_auth_workflow.py --project <project> --mode auto` when the
+  user asks to authenticate, initialize Earth Engine, fix project/quota auth
+  errors, or standardize setup. Give the user the printed commands; do not run
+  OAuth automatically or request tokens/verification codes in chat.
+- Use `scripts/geemap_auth_workflow.py --project <project> --mode auto` when
+  the user says "geemap auth", "geemap authorization", "geemap login", or asks
+  how geemap completes authorization. Explain that geemap reuses
+  `earthengine-api` OAuth credentials and has no separate credential store.
+- Use `scripts/authorize_geemap_once.py --project <project>` when the user asks
+  whether authorization can be reduced to one sentence, or wants a preview of
+  the one-sentence flow. Use `--run` only when the user explicitly asks to
+  proceed, for example "帮我授权 geemap 到 example-ee-project-123456". This runner
+  can launch browser OAuth, set the Earth Engine project, verify
+  `ee.Initialize(project=...)`, then check Google Cloud Quotas/Monitoring access
+  for quota total/used/remaining without reading or printing credential
+  contents. Use `--quota-mode required` for the standard one-sentence flow so
+  missing `gcloud` is resolved through the fixed EasyGEE Google Cloud CLI
+  resource when possible, and Cloud Quotas or Monitoring access is caught during
+  auth rather than later in the browser UI.
+
+## Operating Rules
+
+- Prefer `ee.Initialize(project='...')` over project-less initialization. Earth
+  Engine now expects an explicit Cloud project in most local Python workflows.
+- Treat the Earth Engine project id as user-level local configuration, not
+  repository state. Do not hard-code a user's project id into docs, code, test
+  fixtures, generated HTML committed to git, or plugin bundles. After a
+  successful authorization, persist it only through EasyGEE local settings or
+  the user's Earth Engine/gcloud environment, and reuse it on later plugin
+  runs.
+- For authentication, follow the standard ladder in `references/setup-auth.md`:
+  diagnose with `check_gee_geemap.py`, generate user-run steps with
+  `ee_auth_workflow.py`, let the user complete OAuth, then verify with
+  `check_gee_geemap.py --initialize`.
+- For geemap authorization specifically, use `geemap_auth_workflow.py` as the
+  user-facing entrypoint while keeping the same credential-safety rules. Do not
+  imply geemap has a separate login system.
+- For one-sentence geemap authorization requests, run
+  `authorize_geemap_once.py --project PROJECT` first to show the safe plan. If
+  the user has clearly asked to start the authorization, run it with
+  `--run --quota-mode required` in the intended Python environment, let the
+  user approve Google OAuth / Google Cloud CLI login in the browser when
+  prompted, then report the final verification status for both geemap and quota
+  access. Never ask the user to paste OAuth codes, auth URLs, tokens, service
+  account keys, or credential file contents into chat.
+- On Windows, prefer a fresh shared environment for heavy geospatial stacks
+  when possible. Keep reusable Python environments in a dedicated environments
+  directory outside project repos, and point EasyGEE at it with
+  `EASYGEE_PYTHON` or settings.json `pythonPath`.

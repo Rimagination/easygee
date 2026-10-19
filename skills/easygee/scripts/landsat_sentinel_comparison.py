@@ -24,7 +24,7 @@ try:
         mask_s2_cloud_score_plus,
         scale_landsat_c2_l2,
     )
-    from easygee_project import resolve_project
+    from easygee_project import resolve_project, workspace_root
 except ImportError:  # pragma: no cover - useful when imported as a package
     from skills.easygee.scripts.cloud_mask_workflows import (
         LANDSAT_8_ID,
@@ -33,7 +33,7 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         mask_s2_cloud_score_plus,
         scale_landsat_c2_l2,
     )
-    from skills.easygee.scripts.easygee_project import resolve_project
+    from skills.easygee.scripts.easygee_project import resolve_project, workspace_root
 
 
 LANDSAT_INDEX = "LC08_046028_20200604"
@@ -48,9 +48,7 @@ NDVI_VIS = {
     "max": 0.8,
     "palette": ["440154", "3b528b", "21918c", "5ec962", "fde725"],
 }
-DEFAULT_OUTPUT = Path(
-    "D:/Scratch/easygee-cloud-mask-comparison/landsat-sentinel-comparison.html"
-)
+DEFAULT_OUTPUT = workspace_root() / "cloud-mask-comparison" / "landsat-sentinel-comparison.html"
 
 
 def _tile_url(image: ee.Image, vis_params: dict[str, Any], roi: ee.Geometry) -> str:

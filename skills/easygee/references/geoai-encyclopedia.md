@@ -4,7 +4,7 @@ Use this reference when an EasyGEE request asks to execute a remote-sensing AI
 method, choose a model family, prepare training data, run inference, or evaluate
 spatial predictions. The bundled method library is a self-contained snapshot of
 the `geoai-with-python` skill at
-`references/geoai-with-python/SKILL.md`; it keeps the book's task-oriented
+`references/geoai-with-python/README.md`; it keeps the book's task-oriented
 chapters, patterns, glossary, cheatsheet, and source map available inside the
 EasyGEE plugin.
 
@@ -79,7 +79,7 @@ EasyGEE/GeoMaster references when the workflow touches GEE or GIS.
 | Vision-language models | `geoai-with-python/chapters/ch15-vision-language-models.md` | `ch20` for QGIS |
 | Satellite embeddings | `geoai-with-python/chapters/ch16-satellite-embeddings.md` | `ch03`, `ch06`, `ch07` |
 | QGIS GeoAI | `geoai-with-python/chapters/ch17-qgis-plugin-setup.md` | `ch18`–`ch23` as applicable |
-| Training/inference design | `geoai-with-python/SKILL.md` | `geoai-with-python/references/qgis-training-inference.md` |
+| Training/inference design | `geoai-with-python/README.md` | `geoai-with-python/references/qgis-training-inference.md` |
 
 The cross-cutting files are:
 
@@ -150,3 +150,17 @@ the chapters/references consulted, the data contract, the model/inference
 choice, evaluation design, artifact handoff, and any unrun or unverifiable
 steps. This makes a GeoAI answer operational rather than a collection of
 library names.
+
+## Entry Routing Rules
+
+- If the user asks to execute a remote-sensing AI method, read
+   `references/geoai-encyclopedia.md` first, then load only the relevant
+   `references/geoai-with-python/chapters/` file(s). Use its data contract,
+   training/inference loop, spatial evaluation, and georeferenced-output rules
+   as the method layer; do not treat a model name or score as a completed
+   analysis.
+- Use the GeoAI Encyclopedia as the task-method backend for remote-sensing AI.
+  Read `references/geoai-encyclopedia.md`, choose the smallest relevant
+  chapter, and preserve its data, spatial-split, evaluation, and
+  georeferenced-output contracts. Do not bulk-load the bundled chapters or
+  claim training/inference ran without a checked artifact.

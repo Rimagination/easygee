@@ -120,6 +120,89 @@ asset reference to Earth Engine.
 ## Combining With Other Skills
 
 If remote-sensing methodology is the main challenge, pair this skill with the
-local `geomaster` skill. Use `easygee` for auth, initialization, geemap, and
+bundled GeoMaster snapshot at `extras/geomaster/` (plugin root). Use `easygee` for auth, initialization, geemap, and
 GEE execution shape; use `geomaster` for domain choices such as indices, SAR,
 classification, terrain, hydrology, and CRS handling.
+
+## Target Modes
+
+- Identify the target mode:
+   - **Notebook exploration**: use `geemap` for interactive maps, inspectors,
+     layer styling, quick plots, and HTML/PNG map export.
+   - **Batch/script workflow**: use `ee` directly for deterministic processing,
+     exports, scheduled jobs, and non-interactive pipelines.
+   - **Migration**: use `geemap` to help translate Earth Engine JavaScript
+     examples into Python, then refactor into plain `ee` functions when the
+     result must run headlessly.
+   - **Browser preview**: export a geemap/local map page to HTML, serve it from
+     localhost, and open it in the in-app Browser when visual QA or interaction
+     is useful.
+
+## Minimal Patterns
+
+### Notebook
+
+```python
+import ee
+import geemap
+
+PROJECT = "my-earthengine-project"
+
+# One-time setup only, if credentials are missing:
+# ee.Authenticate(auth_mode="localhost")
+ee.Initialize(project=PROJECT)
+
+m = geemap.Map()
+roi = ee.Geometry.Point([120.16, 30.25]).buffer(10_000)
+s2 = (
+    ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
+    .filterBounds(roi)
+    .filterDate("2024-01-01", "2024-12-31")
+    .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 20))
+    .linkCollection(
+        ee.ImageCollection("GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED"),
+        ["cs_cdf"],
+    )
+    .map(lambda image: image.updateMask(image.select("cs_cdf").gte(0.60)))
+)
+image = (
+    s2
+    .median()
+)
+m.centerObject(roi, 10)
+m.addLayer(image, {"bands": ["B4", "B3", "B2"], "min": 0, "max": 3000}, "S2 median")
+m
+```
+
+### Script
+
+```python
+import ee
+
+PROJECT = "my-earthengine-project"
+
+def main():
+    ee.Initialize(project=PROJECT)
+    roi = ee.Geometry.Rectangle([119.8, 30.0, 120.5, 30.5])
+    s2 = (
+        ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
+        .filterBounds(roi)
+        .filterDate("2024-01-01", "2024-12-31")
+        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 20))
+        .linkCollection(
+            ee.ImageCollection("GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED"),
+            ["cs_cdf"],
+        )
+        .map(lambda image: image.updateMask(image.select("cs_cdf").gte(0.60)))
+    )
+    ndvi = (
+        s2
+        .median()
+        .normalizedDifference(["B8", "B4"])
+        .rename("NDVI")
+    )
+    print(ndvi.reduceRegion(ee.Reducer.mean(), roi, scale=30, maxPixels=1e9).getInfo())
+
+if __name__ == "__main__":
+    main()
+```
